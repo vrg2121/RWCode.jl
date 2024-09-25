@@ -1,0 +1,74 @@
+FUNCTIONS
+        ```
+            # set up optimazation problem for region kk
+            local ind = majorregions.rowid2[kk]:majorregions.rowid[kk]
+            local n = majorregions.n[kk]
+            local l_ind = Linecounts.rowid2[kk]:Linecounts.rowid[kk]
+            local gam = RWParams.Gam[kk]
+            local l_n = Linecounts.n[kk]
+
+            local secalloc = laboralloc_path[ind, :, t]
+            local Lshifter = Lsectorpath_guess[ind,:,t]
+            local Kshifter=Lsectorpath_guess[ind,:,t] .* (params.Vs[:,4]' .* ones(n,1)) ./
+                    (params.Vs[:,1]' .* ones(n,1)) .*
+                    (w_path_guess[ind, t] ./ rP_path[ind,t])
+            #Ltotal = sum(Lshifter, dims=2)
+
+            # define data for inequality constraints
+            local linecons = RWParams.Zmax[l_ind]
+            local Gammatrix = zeros(size(gam, 1), size(gam, 2) + 1)
+            local Gammatrix[:, 2:end] = gam # same as RegionModel
+            if linconscount < l_n
+                Random.seed!(1)
+                randvec = rand(l_n)
+                randvec = randvec .> (linconscount / l_n)
+                Gammatrix[randvec, :] .= 0
+            end
+            local stacker = [-Matrix(I, n, n) Matrix(I, n, n)]
+            local Gammatrix = sparse(Gammatrix) * sparse(stacker) # now has about 800 calls
+            local Gammatrix = [Gammatrix; -Gammatrix]
+            local linecons = [linecons; linecons]
+
+            # define shifters for objective function
+            local pg_s = pg_path_s[ind, :, t]
+            local p_F_in = p_F_path_guess[:,t] # DIFFERENT
+            local prices = p_E_path_guess[ind,t] .* ones(1, params.I)
+            local power = (params.Vs[:,2]' .* ones(n, 1)) .+ (params.Vs[:,3]' .* ones(n, 1))
+            local shifter = pg_s .*
+                    (kappa .+ (prices ./ (kappa .* p_F_in)) .^ (params.psi - 1)) .^ (params.psi / (params.psi-1) .* (params.Vs[:,3]' .* ones(n,1))) .*
+                    (1 .+ (params.Vs[:,3]' .* ones(n,1)) ./ (params.Vs[:,2]' .* ones(n, 1))) .^ (-(params.Vs[:,2]' .* ones(n,1)) .- (params.Vs[:,2]' .* ones(n,1))) .*
+                    params.Z[ind] .*
+                    params.zsector[ind, :] .*
+                    Lshifter .^ (params.Vs[:,1]' .* ones(n,1)) .*
+                    Kshifter .^ (params.Vs[:,4]' .* ones(n,1)) # 272 calls on profiler
+            local shifter = shifter .* secalloc .^ power
+            local KRshifter = regionParams.thetaS[ind] .* KR_path_S[ind, t] .+ regionParams.thetaW[ind] .* KR_path_W[ind, t]
+            local KFshifter = KF_path[ind, t]
+
+            # define bounds
+            local YFmax = KF_path[ind,t] # DIFFERENT
+            local LB = [zeros(n); KRshifter]
+            local UB = [fill(1000, n); YFmax .+ KRshifter .+ 0.01]
+
+            # define guess
+            local guess = [KRshifter; KRshifter .+ 0.0001] # DIFFERENT
+            local l_guess = length(guess)
+
+            # solve market equilibrium
+            local x = Vector{Float64}(undef, l_guess)
+            model = Model(Ipopt.Optimizer)
+            set_silent(model)
+            set_string_names_on_creation(model, false)
+
+            @variable(model, LB[i] <= x[i=1:l_guess] <= UB[i], start=guess[i])            
+            @constraint(model, c1, mycon(x, regionParams.B[kk], params) == 0) # 4156 calls on profiler, 1504 calls to mycon, marketequilibrium 19
+            @objective(model, Min, obj(x, power, shifter, KFshifter, KRshifter, p_F_in, params)) # 374 calls on profiler
+            optimize!(model); # 35204 calls on profiler
+            
+
+            ## save output as P_out
+            local P_out = value.(x)
+            #local P_out = solve_model(x, LB, UB, guess, regionParams, params, power,
+            #                        shifter, KFshifter, KRshifter, p_F_in, l_guess, kk)
+            local mid = length(P_out) /div 2
+            ```

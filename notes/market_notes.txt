@@ -1,0 +1,155 @@
+MethodInstance for Main.MarketFunctions.optimize_region!(::Vector{Vector}, ::Matrix{Matrix{Float64}}, ::Matrix{Matrix{Float64}}, ::Matrix{Float64}, ::DataFrame, ::DataFrame, ::Main.DataLoadsFunc.StructRWParams, ::Matrix{Float64}, ::Matrix{Float64}, ::Main.ParamsFunctions.StructParams, ::Vector{Float64}, ::Vector{Float64}, ::Int64, ::Matrix{Float64}, ::Vector{Float64}, ::Int64, ::Float64, ::Main.DataLoadsFunc.StructRWParams, ::Matrix{Float64}, ::Matrix{Float64})
+  from optimize_region!(result_price_init::Vector, result_Dout_init::Matrix{Matrix{Float64}}, result_Yout_init::Matrix{Matrix{Float64}}, Lossfac_init::Matrix, majorregions::DataFrame, Linecounts::DataFrame, RWParams::Main.DataLoadsFunc.StructRWParams, laboralloc::Matrix, Lsector::Matrix, params::Main.ParamsFunctions.StructParams, wage_init::Vector, rP_init::Vector, linconscount::Int64, pg_init_s::Matrix, pE_market_init::Vector, kappa::Int64, p_F::Float64, regionParams::Main.DataLoadsFunc.StructRWParams, KR_init_S::Matrix, KR_init_W::Matrix) @ Main.MarketFunctions c:\Users\vrg2121\Dropbox (CBS)\Conor Walsh\TradeAndGrowth\Code\RWCodeJulia\RWCodeJulia\src\functions\MarketFunctions.jl:133
+Arguments
+  #self#::Core.Const(Main.MarketFunctions.optimize_region!)
+  result_price_init::Vector{Vector}
+  result_Dout_init::Matrix{Matrix{Float64}}
+  result_Yout_init::Matrix{Matrix{Float64}}
+  Lossfac_init::Matrix{Float64}
+  majorregions::DataFrame
+  Linecounts::DataFrame
+  RWParams::Main.DataLoadsFunc.StructRWParams
+  laboralloc::Matrix{Float64}
+  Lsector::Matrix{Float64}
+  params::Main.ParamsFunctions.StructParams
+  wage_init::Vector{Float64}
+  rP_init::Vector{Float64}
+  linconscount::Int64
+  pg_init_s::Matrix{Float64}
+  pE_market_init::Vector{Float64}
+  kappa::Int64
+  p_F::Float64
+  regionParams::Main.DataLoadsFunc.StructRWParams
+  KR_init_S::Matrix{Float64}
+  KR_init_W::Matrix{Float64}
+Locals
+  threadsfor_fun::Main.MarketFunctions.var"#185#threadsfor_fun#2"{Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}}
+  threadsfor_fun#1::Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}
+  range::UnitRange{Int64}
+Body::Nothing
+1 ─ %1  = Base.getproperty(params, :N)::Int64
+│   %2  = (%1 - 1)::Int64
+│   %3  = (1:%2)::Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])
+│         (range = %3)
+│   %5  = Main.MarketFunctions.:(var"#185#threadsfor_fun#1#3")::Core.Const(Main.MarketFunctions.var"#185#threadsfor_fun#1#3")
+│   %6  = Core.typeof(result_price_init)::Core.Const(Vector{Vector})
+│   %7  = Core.typeof(result_Dout_init)::Core.Const(Matrix{Matrix{Float64}})
+│   %8  = Core.typeof(result_Yout_init)::Core.Const(Matrix{Matrix{Float64}})
+│   %9  = Core.typeof(Lossfac_init)::Core.Const(Matrix{Float64})
+│   %10 = Core.typeof(majorregions)::Core.Const(DataFrame)
+│   %11 = Core.typeof(Linecounts)::Core.Const(DataFrame)
+│   %12 = Core.typeof(RWParams)::Core.Const(Main.DataLoadsFunc.StructRWParams)
+│   %13 = Core.typeof(laboralloc)::Core.Const(Matrix{Float64})
+│   %14 = Core.typeof(Lsector)::Core.Const(Matrix{Float64})
+│   %15 = Core.typeof(params)::Core.Const(Main.ParamsFunctions.StructParams)
+│   %16 = Core.typeof(wage_init)::Core.Const(Vector{Float64})
+│   %17 = Core.typeof(rP_init)::Core.Const(Vector{Float64})
+│   %18 = Core.typeof(linconscount)::Core.Const(Int64)
+│   %19 = Core.typeof(pg_init_s)::Core.Const(Matrix{Float64})
+│   %20 = Core.typeof(pE_market_init)::Core.Const(Vector{Float64})
+│   %21 = Core.typeof(kappa)::Core.Const(Int64)
+│   %22 = Core.typeof(p_F)::Core.Const(Float64)
+│   %23 = Core.typeof(regionParams)::Core.Const(Main.DataLoadsFunc.StructRWParams)
+│   %24 = Core.typeof(KR_init_S)::Core.Const(Matrix{Float64})
+│   %25 = Core.typeof(KR_init_W)::Core.Const(Matrix{Float64})
+│   %26 = Core.typeof(range::Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64]))::Core.Const(UnitRange{Int64})
+│   %27 = Core.apply_type(%5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18, %19, %20, %21, %22, %23, %24, %25, %26)::Core.Const(Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}})
+│         (threadsfor_fun#1 = %new(%27, result_price_init, result_Dout_init, result_Yout_init, Lossfac_init, majorregions, Linecounts, RWParams, laboralloc, Lsector, params, wage_init, rP_init, linconscount, pg_init_s, pE_market_init, kappa, p_F, regionParams, KR_init_S, KR_init_W, range::Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])))
+│   %29 = Main.MarketFunctions.:(var"#185#threadsfor_fun#2")::Core.Const(Main.MarketFunctions.var"#185#threadsfor_fun#2")
+│   %30 = Core.typeof(threadsfor_fun#1::Core.PartialStruct(Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])]))::Core.Const(Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}})
+│   %31 = Core.apply_type(%29, %30)::Core.Const(Main.MarketFunctions.var"#185#threadsfor_fun#2"{Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}})
+│         (threadsfor_fun = %new(%31, threadsfor_fun#1::Core.PartialStruct(Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])])))
+│   %33 = threadsfor_fun::Core.PartialStruct(Main.MarketFunctions.var"#185#threadsfor_fun#2"{Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}}, Any[Core.PartialStruct(Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])])])
+│         Core.ifelse(false, false, %33)
+└──       goto #3 if not true
+2 ─       Base.Threads.threading_run(threadsfor_fun::Core.PartialStruct(Main.MarketFunctions.var"#185#threadsfor_fun#2"{Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}}, Any[Core.PartialStruct(Main.MarketFunctions.var"#185#threadsfor_fun#1#3"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])])]), false)
+└──       goto #4
+3 ─       Core.Const(:($(Expr(:foreigncall, :(:jl_in_threaded_region), Int32, svec(), 0, :(:ccall)))))
+│         Core.Const(:(%38 != 0))
+│         Core.Const(:(goto %43 if not %39))
+│         Core.Const(:(Base.Threads.error("`@threads :static` cannot be used concurrently or nested")))
+│         Core.Const(:(goto %44))
+└──       Core.Const(:(Base.Threads.threading_run(threadsfor_fun, true)))
+4 ┄ %44 = Base.Threads.nothing::Core.Const(nothing)
+└──       return %44
+
+
+
+
+TEST SOLVE MODEL - SAME NUMBER OF Any
+MethodInstance for Main.MarketFunctions.optimize_region_test!(::Vector{Vector}, ::Matrix{Matrix{Float64}}, ::Matrix{Matrix{Float64}}, ::Matrix{Float64}, ::DataFrame, ::DataFrame, ::Main.DataLoadsFunc.StructRWParams, ::Matrix{Float64}, ::Matrix{Float64}, ::Main.ParamsFunctions.StructParams, ::Vector{Float64}, ::Vector{Float64}, ::Int64, ::Matrix{Float64}, ::Vector{Float64}, ::Int64, ::Float64, ::Main.DataLoadsFunc.StructRWParams, ::Matrix{Float64}, ::Matrix{Float64}, ::Float64)
+  from optimize_region_test!(result_price_init::Vector, result_Dout_init::Matrix{Matrix{Float64}}, result_Yout_init::Matrix{Matrix{Float64}}, Lossfac_init::Matrix, majorregions::DataFrame, Linecounts::DataFrame, RWParams::Main.DataLoadsFunc.StructRWParams, laboralloc::Matrix, Lsector::Matrix, params::Main.ParamsFunctions.StructParams, wage_init::Vector, rP_init::Vector, linconscount::Int64, pg_init_s::Matrix, pE_market_init::Vector, kappa::Int64, p_F::Float64, regionParams::Main.DataLoadsFunc.StructRWParams, KR_init_S::Matrix, KR_init_W::Matrix, power2::Float64) @ Main.MarketFunctions c:\Users\vrg2121\Dropbox (CBS)\Conor Walsh\TradeAndGrowth\Code\RWCodeJulia\RWCodeJulia\src\functions\MarketFunctions.jl:159
+Arguments
+  #self#::Core.Const(Main.MarketFunctions.optimize_region_test!)
+  result_price_init::Vector{Vector}
+  result_Dout_init::Matrix{Matrix{Float64}}
+  result_Yout_init::Matrix{Matrix{Float64}}
+  Lossfac_init::Matrix{Float64}
+  majorregions::DataFrame
+  Linecounts::DataFrame
+  RWParams::Main.DataLoadsFunc.StructRWParams
+  laboralloc::Matrix{Float64}
+  Lsector::Matrix{Float64}
+  params::Main.ParamsFunctions.StructParams
+  wage_init::Vector{Float64}
+  rP_init::Vector{Float64}
+  linconscount::Int64
+  pg_init_s::Matrix{Float64}
+  pE_market_init::Vector{Float64}
+  kappa::Int64
+  p_F::Float64
+  regionParams::Main.DataLoadsFunc.StructRWParams
+  KR_init_S::Matrix{Float64}
+  KR_init_W::Matrix{Float64}
+  power2::Float64
+Locals
+  threadsfor_fun::Main.MarketFunctions.var"#200#threadsfor_fun#5"{Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}}
+  threadsfor_fun#4::Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}
+  range::UnitRange{Int64}
+Body::Nothing
+1 ─ %1  = Base.getproperty(params, :N)::Int64
+│   %2  = (%1 - 1)::Int64
+│   %3  = (1:%2)::Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])
+│         (range = %3)
+│   %5  = Main.MarketFunctions.:(var"#200#threadsfor_fun#4#6")::Core.Const(Main.MarketFunctions.var"#200#threadsfor_fun#4#6")
+│   %6  = Core.typeof(result_price_init)::Core.Const(Vector{Vector})
+│   %7  = Core.typeof(result_Dout_init)::Core.Const(Matrix{Matrix{Float64}})
+│   %8  = Core.typeof(result_Yout_init)::Core.Const(Matrix{Matrix{Float64}})
+│   %9  = Core.typeof(Lossfac_init)::Core.Const(Matrix{Float64})
+│   %10 = Core.typeof(majorregions)::Core.Const(DataFrame)
+│   %11 = Core.typeof(Linecounts)::Core.Const(DataFrame)
+│   %12 = Core.typeof(RWParams)::Core.Const(Main.DataLoadsFunc.StructRWParams)
+│   %13 = Core.typeof(laboralloc)::Core.Const(Matrix{Float64})
+│   %14 = Core.typeof(Lsector)::Core.Const(Matrix{Float64})
+│   %15 = Core.typeof(params)::Core.Const(Main.ParamsFunctions.StructParams)
+│   %16 = Core.typeof(wage_init)::Core.Const(Vector{Float64})
+│   %17 = Core.typeof(rP_init)::Core.Const(Vector{Float64})
+│   %18 = Core.typeof(linconscount)::Core.Const(Int64)
+│   %19 = Core.typeof(pg_init_s)::Core.Const(Matrix{Float64})
+│   %20 = Core.typeof(pE_market_init)::Core.Const(Vector{Float64})
+│   %21 = Core.typeof(kappa)::Core.Const(Int64)
+│   %22 = Core.typeof(p_F)::Core.Const(Float64)
+│   %23 = Core.typeof(regionParams)::Core.Const(Main.DataLoadsFunc.StructRWParams)
+│   %24 = Core.typeof(KR_init_S)::Core.Const(Matrix{Float64})
+│   %25 = Core.typeof(KR_init_W)::Core.Const(Matrix{Float64})
+│   %26 = Core.typeof(power2)::Core.Const(Float64)
+│   %27 = Core.typeof(range::Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64]))::Core.Const(UnitRange{Int64})
+│   %28 = Core.apply_type(%5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18, %19, %20, %21, %22, %23, %24, %25, %26, %27)::Core.Const(Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}})
+│         (threadsfor_fun#4 = %new(%28, result_price_init, result_Dout_init, result_Yout_init, Lossfac_init, majorregions, Linecounts, RWParams, laboralloc, Lsector, params, wage_init, rP_init, linconscount, pg_init_s, pE_market_init, kappa, p_F, regionParams, KR_init_S, KR_init_W, power2, range::Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])))
+│   %30 = Main.MarketFunctions.:(var"#200#threadsfor_fun#5")::Core.Const(Main.MarketFunctions.var"#200#threadsfor_fun#5")
+│   %31 = Core.typeof(threadsfor_fun#4::Core.PartialStruct(Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])]))::Core.Const(Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}})
+│   %32 = Core.apply_type(%30, %31)::Core.Const(Main.MarketFunctions.var"#200#threadsfor_fun#5"{Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}})
+│         (threadsfor_fun = %new(%32, threadsfor_fun#4::Core.PartialStruct(Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])])))
+│   %34 = threadsfor_fun::Core.PartialStruct(Main.MarketFunctions.var"#200#threadsfor_fun#5"{Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}}, Any[Core.PartialStruct(Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])])])
+│         Core.ifelse(false, false, %34)
+└──       goto #3 if not true
+2 ─       Base.Threads.threading_run(threadsfor_fun::Core.PartialStruct(Main.MarketFunctions.var"#200#threadsfor_fun#5"{Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}}, Any[Core.PartialStruct(Main.MarketFunctions.var"#200#threadsfor_fun#4#6"{Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, UnitRange{Int64}}, Any[Vector{Vector}, Matrix{Matrix{Float64}}, Matrix{Matrix{Float64}}, Matrix{Float64}, DataFrame, DataFrame, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Main.ParamsFunctions.StructParams, Vector{Float64}, Vector{Float64}, Int64, Matrix{Float64}, Vector{Float64}, Int64, Float64, Main.DataLoadsFunc.StructRWParams, Matrix{Float64}, Matrix{Float64}, Float64, Core.PartialStruct(UnitRange{Int64}, Any[Core.Const(1), Int64])])]), false)
+└──       goto #4
+3 ─       Core.Const(:($(Expr(:foreigncall, :(:jl_in_threaded_region), Int32, svec(), 0, :(:ccall)))))
+│         Core.Const(:(%39 != 0))
+│         Core.Const(:(goto %44 if not %40))
+│         Core.Const(:(Base.Threads.error("`@threads :static` cannot be used concurrently or nested")))
+│         Core.Const(:(goto %45))
+└──       Core.Const(:(Base.Threads.threading_run(threadsfor_fun, true)))
+4 ┄ %45 = Base.Threads.nothing::Core.Const(nothing)
+└──       return %45

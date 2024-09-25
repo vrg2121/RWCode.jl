@@ -1,0 +1,19 @@
+Market.jl -- Naive
+7.588793 seconds (683.07 k allocations: 150.172 MiB, 2.41% gc time, 3.87% compilation time: 39% of which was recompilation)
+7.040593 seconds (335.07 k allocations: 127.255 MiB, 1.65% gc time)
+6.988867 seconds (335.07 k allocations: 127.255 MiB
+6.782525 seconds (335.07 k allocations: 127.255 MiB))
+
+Market_a.jl -- function wrap
+7.314780 seconds (650.14 k allocations: 148.069 MiB, 3.35% compilation time: 29% of which was recompilation)
+7.750752 seconds (335.07 k allocations: 127.255 MiB)
+7.188919 seconds (335.07 k allocations: 127.255 MiB, 1.37% gc time)
+7.620836 seconds (335.07 k allocations: 127.255 MiB)
+
+Market_a.jl -- use broadcasting (?)
+7.620836 seconds (335.07 k allocations: 127.255 MiB)
+7.180091 seconds (335.07 k allocations: 127.255 MiB)
+9.907492 seconds (335.07 k allocations: 127.255 MiB)
+7.199333 seconds (335.07 k allocations: 127.255 MiB)
+
+Market_a.jl -- max itr

@@ -1,0 +1,33 @@
+DATAADUSJTMENTS:
+Matshifter
+
+
+MARKETEQUILIBRIUM: 
+hessinterior, obj, mycon, obj2, Price_Solve, wage_update_ms
+
+
+PARAMETERIZERUN:
+RunTransition, RunBatteries, RunImprovement, RunExog, RunCurtailment, Transiter, Initialprod, st
+
+
+PARAMS:
+params, thetaS, theta, thetaW, regions, majorregions, popelas, T, Linecounts, 
+linconscount, kappa, updw_w, upw_z, curtailmentswitch, decayp, hoursofstorage, 
+pB_shifter, pkw_solar, pkwh_B, g, upda, updwF, updwk 
+
+
+DATALOADS: 
+# export data
+RWParams, regionParams, FFsupplyCurves, GsupplyCurves, projectionswind, projectionssolar, 
+curtmat, batteryrequirements, sectoralempshares, samplepointssolar, samplepointswind, samplepointsbat
+
+# export constants
+R_LR, wage_init, KR_init_S, KR_init_W
+
+MARKET: wageresults, 
+	   p_KR_bar_init, KF_init, laboralloc_init, 
+	   p_KR_init_S, p_KR_init_W, 
+	   renewshareUS, p_F_int, mrkteq
+
+STEADY STATE: sseq, interp3, GDP, wr, wagechange, 		welfare_wagechange, welfare_capitalchange, 
+      	welfare_electricitychange, welfare_fossilchange

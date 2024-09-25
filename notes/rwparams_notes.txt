@@ -1,0 +1,210 @@
+using CSV, DataFrames, LinearAlgebra, MAT, Main.DataAdjustments, Tables, Main.Functions, Main.Params
+
+# load data 
+regions_all = CSV.File("Data/ModelDataset/Regions_sorted.csv", header=true) |> DataFrame
+Linedata = CSV.File("Data/ModelDataset/Linedata.csv") |> DataFrame
+majorregions_all = CSV.File("Data/ModelDataset/majorregions.csv") |> DataFrame
+Fossilcapital = CSV.File("Data/ModelDataset/aggcap_ffl.csv")  |> DataFrame
+Renewablecapital = CSV.File("Data/ModelDataset/aggcap_rnw.csv") |> DataFrame
+Electricityregionprices = CSV.File("Data/ModelDataset/Region_prices.csv") |> DataFrame
+
+# initiate variables
+wage_init = Matrix{Float64}(undef, 2531, 1)
+wage_init .= regions.wages ./ (regions.wages[1])
+wage_init .= coalesce(wage_init, 1.0)
+wage_init[wage_init .> 2] .= 2.0
+
+# long run interest rate
+R_LR = 1/params.beta
+rP_LR = R_LR - 1 + params.deltaB # long run return on production capital
+
+struct StructRWParams
+    Kmatrix::Matrix{Float64}
+    A::Vector{Matrix{Float64}}
+    Adash::Vector{Matrix{Float64}}
+    O::Vector{Matrix{Float64}}
+    Gam::Vector{Matrix{Float64}}
+    Gam2::Vector{Matrix{Float64}}
+    Gam3::Vector{Matrix{Float64}}
+    B::Vector{Matrix{Float64}}
+    KF::Matrix{Float64}
+    maxF::Matrix{Float64}
+    KR::Matrix{Float64}
+    Zmax::Matrix{Float64}
+    thetaS::Matrix{Float64}
+    thetaW::Matrix{Float64}
+    scalar::Int
+    Countryshifter::Matrix{Float64}
+    costshifter::Matrix{Float64}
+    KP::Matrix{Float64}
+    z::Matrix{Float64}
+    zS::Matrix{Float64}
+end
+
+function create_RWParams()
+
+    # Initialize the vectors of matrices
+
+    s1 = [(1466, 726), (1432, 754), (59, 29), (114, 52), 
+        (14, 12), (23, 14), (76, 45), (10, 10), 
+        (42, 25), (157, 77), (247, 124), (738, 319)]
+
+    s2 = [(1466, 1466), (1432, 1432), (59, 59), (114, 114), 
+    (14, 14), (23, 23), (76, 76), (10, 10), 
+    (42, 42), (157, 157), (247, 247), (738, 738)]
+
+    s3 = [(726, 726), (754, 754), (29, 29), (52, 52), 
+    (12, 12), (14, 14), (45, 45), (10, 10), 
+    (25, 25), (77, 77), (124, 124), (319, 319)]
+
+    Kmatrix = Matrix{Float64}(undef, 4382, 2531)             # KMatrix
+    A = [Matrix{Float64}(undef, size...) for size in s1] # A
+    Adash = [Matrix{Float64}(undef, size...) for size in s1] # Adash
+    O = [Matrix{Float64}(undef, size...) for size in s2] # O
+    Gam = [Matrix{Float64}(undef, size...) for size in s1] # Gam
+    Gam2 = [Matrix{Float64}(undef, size...) for size in s1] # Gam2
+    Gam3 = [Matrix{Float64}(undef, size...) for size in s1] # Gam3
+    B = [Matrix{Float64}(undef, size...) for size in s3] # B
+    KF = Matrix{Float64}(undef, 2531, 1)                  # KF
+    maxF = Matrix{Float64}(undef, 2531, 1)                  # maxF
+    KR = Matrix{Float64}(undef, 2531, 1)                  # KR
+    Zmax = Matrix{Float64}(undef, 4382, 1)                  # Zmax
+    thetaS = Matrix{Float64}(undef, 2531, 1)                  # thetaS
+    thetaW = Matrix{Float64}(undef, 2531, 1)                  # thetaW
+    #scalar = 0                                                # scalar
+    Countryshifter = Matrix{Float64}(undef, 2531, 1)                  # Countryshifter
+    costshifter = Matrix{Float64}(undef, 2531, 1)                  # costshifter
+    KP = Matrix{Float64}(undef, 2531, 1)                  # KP
+    z = Matrix{Float64}(undef, 2531, 1)                  # z 
+    zS = Matrix{Float64}(undef, 2531, 10)                  # zS
+
+
+    # create kmatrix
+    Kmatrix = Matrix(CSV.File("Data/ModelDataset/Kmatrix.csv", drop=[1]) |> DataFrame)
+    Kmatrix .= Matshifter(Kmatrix)
+
+    # create A
+    Kmx = Matrix(CSV.File("Data/ModelDataset/Kmatrix_1.csv", drop=[1]) |> DataFrame)[:, 2:majorregions_all.rowid[1]]
+    A[1] .= Matshifter(Kmx)
+    Adash[1] .= Matshifter(Kmx)
+
+    # create Omatrix
+    Omatrix = CSV.File("Data/ModelDataset/Omatrix_1.csv", drop=[1]) |> DataFrame
+    Omatrix = Vector(Omatrix[!,1])
+    O[1] .= Diagonal(Omatrix)
+
+    # create Gam
+    Gam[1] .=  O[1]^(-1) *  A[1] * ( A[1]' *  O[1]^(-1) *  A[1])^(-1)
+    Gam2[1] .=  Gam[1]
+
+    row_maxima = vec(maximum( Gam[1], dims=2))
+    num_repeats = majorregions_all.rowid[1] - 1
+    indmax = repeat(row_maxima, 1, num_repeats)
+
+    Gam2[1][ Gam2[1] .< indmax] .= 0
+
+    Gam3[1] .=  Gam[1]
+    row_min = vec(minimum( Gam[1], dims=2))
+    indmin = repeat(row_min, 1, num_repeats)
+    Gam3[1][ Gam3[1] .> indmin] .= 0
+
+    # fill the rest of A, Adash, O in a for loop
+    for jj in 2:(size(majorregions_all, 1)-1)
+        stringer = "Data/ModelDataset/Kmatrix_$(jj).csv"
+        stringer2 = "Data/ModelDataset/Omatrix_$(jj).csv"
+        Kmatrix = Matrix(CSV.File(stringer) |> DataFrame)
+        Kmatrix = Kmatrix[:, majorregions_all.rowid[jj-1] + 2 : majorregions_all.rowid[jj]]
+        Omatrix = Matrix(CSV.File(stringer2) |> DataFrame)
+        Omatrix = Omatrix[:, 2]
+        A[jj] .= Matshifter(Kmatrix)
+        Adash[jj] .= Matshifter(Kmatrix)
+        O[jj] .= Diagonal(Omatrix)
+        Gam[jj] .=  O[jj]^(-1) *  A[jj] * ( A[jj]' *  O[jj]^(-1) *  A[jj])^(-1)
+
+       
+        indmax =  repeat(maximum( Gam[jj], dims=2), 1, majorregions_all.n[jj] - 1)
+        Gam2[jj] .=  Gam[jj]
+        Gam2[jj][ Gam2[jj] .< indmax] .= 0
+    
+        
+        indmin = repeat(minimum( Gam[jj], dims=2), 1, majorregions_all.n[jj] - 1)
+        Gam3[jj] .=  Gam[jj]
+        Gam2[jj][ Gam2[jj] .> indmin] .= 0   
+    end
+
+    R = size(majorregions, 1) - 1   # regions
+    I = 10                          # industries
+
+    # create B 
+    for jj in 1:R
+        tA =  A[jj]
+        tO =  O[jj]
+        B[jj] .= inv(tA' * tO * tA)
+    end
+
+    # fossil fuel capital
+     KF .= regions.ffl_capacity_mw ./ regions.ffl_capacity_mw[1]
+     KF .+= 10.0^(-1)
+
+    # set max fossil fuel use to capacity
+    maxF .=  KF
+
+    # renewable capital
+    KR .= regions.rnw_capacity_mw ./ regions.ffl_capacity_mw[1]
+
+    # max line flows
+    Zmax .- Linedata.lcap ./ regions.ffl_capacity_mw[1]
+
+    # renewable potential
+    thetaS .= coalesce.(thetaS, 0.2) # set places without sunlight data to very low
+    thetaW .= coalesce.(thetaW, 0.2) # set places without wind data to very low
+
+    #shift potential so that urban regions don't install lots of capital, then
+    #scale by relative country costshifters
+    scalar = params.renewablecostscaler
+    Countryshifter .= regions[!, :costrel]
+
+    # define costshifter
+    for kk in 1:params.N
+        range = majorregions[!, :rowid2][kk]:majorregions[!, :rowid][kk]
+        
+        costshifter[range] = (
+            (regions[!, :pop_dens][range] .^ popelas) ./ 
+            (regions[!, :pop_dens][majorregions[!, :rowid2][kk]] .^ popelas)
+        ) .*  scalar .*  Countryshifter[range]
+    end
+
+    # production capital
+    KP .= regions[!, :capitalperworker]
+    R_normaliser = wage_init ./ ( KP .* rP_LR)
+    KP .=  KP .* R_normaliser
+
+    z .= params.Z
+    zS .= repeat(params.Z, 1, 10)
+
+    return StructRWParams(
+        Kmatrix,
+        A,
+        Adash,
+        O,
+        Gam,
+        Gam2,
+        Gam3,
+        B,
+        KF,
+        maxF,
+        KR,
+        Zmax,
+        thetaS,
+        thetaW,
+        scalar,
+        Countryshifter,
+        costshifter,
+        KP,
+        z,
+        zS
+    )  
+
+end
+
+@time RWParams = create_RWParams()

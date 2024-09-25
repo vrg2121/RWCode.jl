@@ -1,0 +1,459 @@
+%-------------------------------------------------------------------------
+%                          Initialisation
+%-------------------------------------------------------------------------
+
+capT=20;
+options = optimoptions('fmincon',...
+'SpecifyObjectiveGradient',true,'SpecifyConstraintGradient',true,'MaxFunctionEvaluations',10^5,'Display','iter');
+options = optimoptions('fmincon',...
+'SpecifyObjectiveGradient',true,'SpecifyConstraintGradient',true,'MaxFunctionEvaluations',10^5,'Display','off');
+
+%Specify path for fossil fuel capital
+%KF_path=KF_LR+(RWParams.KF-KF_LR).*exp(-0.01*(0:T));
+
+%guess for interest rate
+r_path=repmat(R_LR,1,T);
+
+%Intial guess for long run capital, slowly initially 
+KR_path_S=KR_LR_S+(KR_init_S-KR_LR_S).*exp(0.1*decayp*(0:T));
+KR_path_W=KR_LR_W+(KR_init_W-KR_LR_W).*exp(0.1*decayp*(0:T));
+
+%initial guess for prices
+p_E_path_guess=p_E_LR+(p_E_init-p_E_LR).*exp(decayp*(0:T));
+
+%initial guess for demand and supply
+D_path=D_LR+(D_init-D_LR).*exp(decayp*(0:T));
+Y_path=YE_LR+(YE_init-YE_LR).*exp(decayp*(0:T));
+
+%initial guess for goods prices
+PC_path_guess=PC_guess_LR+(PC_guess_init-PC_guess_LR).*exp(decayp*(0:T));
+
+%initial guess for electricity profits
+PI_path=PI_LR+(PI_init-PI_LR).*exp(decayp*(0:T));
+
+%initial guess for wages
+w_path_guess=w_LR+(wage_init-w_LR).*exp(decayp*(0:T));
+
+%initial guess for sectoral allocations
+Lsectorpath_guess=repmat(exp(decayp*(0:T)),params.J,1,params.I);
+Lsectorpath_guess=permute(Lsectorpath_guess,[1 3 2]);
+Lsectorpath_guess=laboralloc_LR+(laboralloc_init-laboralloc_LR).*Lsectorpath_guess;
+Lsectorpath_guess=Lsectorpath_guess.*repmat(params.L,1,params.I,T+1);
+laboralloc_path=Lsectorpath_guess./repmat(params.L,1,params.I,T+1);
+
+% initial guess for fossil path
+r=0.05*ones(1,T+1);
+p_F_path_guess=ones(1,T+1).*0.05.*(1+r/2).^linspace(1,T+1,T+1);
+
+
+%Intial guess for Battery path
+B_path=KR_LR*2+(RWParams.KR*2-KR_LR*2).*exp(0.1*decayp*(0:T));
+
+
+%-------------------------------------------------------------------------
+%---------------------- Solve Transition Path
+%-------------------------------------------------------------------------
+difftrans=1;
+ll=1;
+
+%Capital series 
+KF_path=KF_LR+(RWParams.KF-KF_LR).*exp(-params.delta *(0:T));
+
+%set guess for path for capital prices
+p_KR_bar_path=p_KR_bar_LR+(p_KR_bar_init-p_KR_bar_LR).*exp(decayp*(0:T));
+%p_KR_path_guess_S=p_KR_LR_S+(p_KR_init_S-p_KR_LR_S).*exp(decayp*(0:T));
+%p_KR_path_guess_W=p_KR_LR_W+(p_KR_init_W-p_KR_LR_W).*exp(decayp*(0:T));
+p_KR_path_guess_S=p_KR_init_S.*projectionssolar(:,exogindex+1);
+p_KR_path_guess_S=[p_KR_path_guess_S; repmat(p_KR_path_guess_S(end),T-length(p_KR_path_guess_S)+1,1)]';
+p_KR_path_guess_W=p_KR_init_W.*projectionswind(:,exogindex+1);
+p_KR_path_guess_W=[p_KR_path_guess_W; repmat(p_KR_path_guess_W(end),T-length(p_KR_path_guess_W)+1,1)]';
+p_KR_path_S=p_KR_path_guess_S;
+p_KR_path_W=p_KR_path_guess_W;
+
+
+%set path for battery prices
+p_B_init=(Initialprod+sum(RWParams.KR)*hoursofstorage).^(-params.gammaB);
+p_B_path_guess=p_B+(p_B_init-p_B).*exp(decayp*(0:T));
+
+
+tic
+
+
+while difftrans>10^(-2) & ll<=Transiter
+
+    Depreciation_S=KR_path_S*params.deltaR;
+    Depreciation_W=KR_path_W*params.deltaR;
+
+    I_path_S=max(KR_path_S(:,2:end)-KR_path_S(:,1:end-1)+Depreciation_S(:,1:end-1),0);
+    I_path_W=max(KR_path_W(:,2:end)-KR_path_W(:,1:end-1)+Depreciation_W(:,1:end-1),0);
+    I_total_path_S=sum(I_path_S,1);
+    I_total_path_W=sum(I_path_W,1);
+    
+    for i=1:length(I_total_path_S)
+       cumsum_S=fliplr(I_total_path_S(1:i));
+       cumsum_S=cumsum_S.*(params.iota).^(1:i);
+       Qtotal_path_S(i+1)=sum(cumsum_S)+(sum(KR_init_S)+Initialprod)*(params.iota).^(i+1);
+       cumsum_W=fliplr(I_total_path_W(1:i));
+       cumsum_W=cumsum_W.*(params.iota).^(1:i);
+       Qtotal_path_W(i+1)=sum(cumsum_W)+(sum(KR_init_W)+Initialprod)*(params.iota).^(i+1);
+    end
+
+    Qtotal_path_S(1)=sum(KR_init_S)+Initialprod;
+    Qtotal_path_W(1)=sum(KR_init_W)+Initialprod;
+    
+    %don't update capital price
+%     p_KR_path_S=(Qtotal_path_S).^(-params.gammaS);
+%     p_KR_path_W=(Qtotal_path_W).^(-params.gammaW);
+%     p_KR_path_guess_S=(0.5).*p_KR_path_S+(1-0.5).*p_KR_path_guess_S;
+%     p_KR_path_guess_W=(0.5).*p_KR_path_W+(1-0.5).*p_KR_path_guess_W;
+
+    %get solar shares
+    SShare_path=(regionParams.thetaS./p_KR_path_guess_S).^params.varrho./((regionParams.thetaS./p_KR_path_guess_S).^params.varrho+(regionParams.thetaW./p_KR_path_guess_W).^params.varrho);
+    thetabar_path=regionParams.thetaS.*SShare_path+regionParams.thetaW.*(1-SShare_path);
+    p_KR_bar_path=SShare_path.*p_KR_path_guess_S+(1-SShare_path).*p_KR_path_guess_W;
+
+    %update battery prices
+    KR_path=KR_path_S+KR_path_W;
+    DepreciationB=KR_path*params.deltaB*hoursofstorage;
+    I_pathB=max((KR_path(:,2:end)-KR_path(:,1:end-1))*hoursofstorage+DepreciationB(:,1:end-1),0);
+    I_total_pathB=sum(I_pathB,1);
+
+    %set returns on capital
+    rP_path=(r_path-1+params.deltaP).*PC_path_guess(:,1:end-1);  
+    rP_path(:,end+1)=rP_path(:,end);
+
+    pg_path_s=[];
+    for jj=1:T+1    
+    pg_path_s(:,:,jj)=w_path_guess(:,jj).^repmat(params.Vs(:,1)',params.J,1).*p_E_path_guess(:,jj).^(repmat(params.Vs(:,2)',params.J,1)+repmat(params.Vs(:,3)',params.J,1)).*...
+        (params.kappa+(params.kappa.*p_F_path_guess(:,jj)./p_E_path_guess(:,jj)).^(1-params.psi)).^(-(params.psi./(params.psi-1))*params.Vs(:,3)')...
+        .*rP_path(:,jj).^repmat(params.Vs(:,4)',params.J,1)...
+        ./(params.Z.*params.zsector.*params.cdc);
+    end
+
+    %power path
+    YR_path=regionParams.thetaS.*KR_path_S+regionParams.thetaW.*KR_path_W;
+    P_E_path=(Y_path-D_path);
+              
+    %---------------------------------------------------------------
+    %-------           Solve Transition Electricity Market
+    %---------------------------------------------------------------
+
+ 
+    %US and Europe     
+    for kk=1:2
+     parfor t=1:capT
+          
+
+        %set up optimization problem for region kk
+        secalloc=laboralloc_path(majorregions.rowid2(kk):majorregions.rowid(kk),:,t);
+        Yvec=Y_path(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+        Lshifter=Lsectorpath_guess(majorregions.rowid2(kk):majorregions.rowid(kk),:,t);
+        Kshifter=Lsectorpath_guess(majorregions.rowid2(kk):majorregions.rowid(kk),:,t).*repmat(params.Vs(:,4)',majorregions.n(kk),1)...
+                ./(repmat(params.Vs(:,1)',majorregions.n(kk),1)).*(w_path_guess(majorregions.rowid2(kk):majorregions.rowid(kk),t)...
+                ./rP_path(majorregions.rowid2(kk):majorregions.rowid(kk),t));
+        Ltotal=sum(Lshifter,2);
+        Jlength=majorregions.n(kk);
+
+        %define data for inequality constraints
+        linecons=RWParams.Zmax(Linecounts.rowid2(kk):Linecounts.rowid(kk));
+        Gammatrix=[zeros(length(RWParams.Gam{kk}),1) RWParams.Gam{kk}];
+        if linconscount<Linecounts.n(kk)
+            rng( 1 ) 
+            randvec=rand(Linecounts.n(kk),1);
+            randvec=randvec>linconscount/Linecounts.n(kk);
+            Gammatrix(randvec,:)=0;
+        else
+        end
+        stacker=[-eye(majorregions.n(kk)) eye(majorregions.n(kk))];
+        Gammatrix=sparse(Gammatrix*stacker);
+        Gammatrix=[Gammatrix;-Gammatrix];
+        linecons=[linecons;linecons];
+    
+        %define shifters for objective function
+        pg_s=pg_path_s(majorregions.rowid2(kk):majorregions.rowid(kk),:,t);
+        p_F_in=p_F_path_guess(:,t)
+        prices=repmat(p_E_path_guess(majorregions.rowid2(kk):majorregions.rowid(kk),t),1,params.I);
+        power=(repmat(params.Vs(:,2)',Jlength,1)+repmat(params.Vs(:,3)',Jlength,1));
+        shifter=pg_s.*(kappa +(prices./ (kappa .* p_F_in)).^(params.psi - 1)).^( params.psi/(params.psi-1).*repmat(params.Vs(:,3)',majorregions.n(kk),1) )...
+            .*(1+repmat(params.Vs(:,3)',majorregions.n(kk),1)./repmat(params.Vs(:,2)',majorregions.n(kk),1)).^(-repmat(params.Vs(:,2)',majorregions.n(kk),1)-repmat(params.Vs(:,2)',majorregions.n(kk),1))...
+            .*params.Z(majorregions.rowid2(kk):majorregions.rowid(kk)).*params.zsector(majorregions.rowid2(kk):majorregions.rowid(kk),:)...
+            .*Lshifter.^repmat(params.Vs(:,1)',majorregions.n(kk),1)...
+            .*Kshifter.^repmat(params.Vs(:,4)',majorregions.n(kk),1); 
+        shifter=shifter.*secalloc.^power;
+        KRshifter=regionParams.thetaS(majorregions.rowid2(kk):majorregions.rowid(kk)).*KR_path_S(majorregions.rowid2(kk):majorregions.rowid(kk),t)+...
+                  regionParams.thetaW(majorregions.rowid2(kk):majorregions.rowid(kk)).*KR_path_W(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+        KFshifter=KF_path(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+        
+        %define bounds
+        YFmax=KF_path(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+        LB=[zeros(majorregions.n(kk),1);KRshifter];
+        UB=[10^3.*ones(majorregions.n(kk),1);YFmax+KRshifter+0.01];
+
+        %define guess
+        guess=[KRshifter;KRshifter+0.0001]
+
+        %solve market equilbrium    
+        inputfunc= @(x) obj(x,power,shifter,Jlength,KFshifter,KRshifter,p_F_in,priceshifterupdate(kk),params);
+        myconin = @(x) mycon(x,regionParams.B{kk},params)  ;
+        hess=@(x,lambda2) hessinterior(x,lambda2, power,shifter,KFshifter,KRshifter,p_F_in,regionParams.B{kk},params);
+        options = optimoptions('fmincon',...
+        'SpecifyObjectiveGradient',true,'SpecifyConstraintGradient',true,'MaxIterations',10^5,'MaxFunctionEvaluations',10^5,'Display','off',...
+        'HessianFcn',hess,'EnableFeasibilityMode',true,'BarrierParamUpdate','predictor-corrector');
+
+
+        [P_out,fval,exitflag,output,lambda,GRAD,HESSIAN]=fmincon(inputfunc,guess,Gammatrix,sparse(linecons),[],[],sparse(LB),UB,myconin,options);
+        
+        result_price_path{kk,t}=Price_Solve(P_out,secalloc,shifter,Jlength,params);
+        result_Dout_path{kk,t}=P_out(1:end/2);
+        result_Yout_path{kk,t}=P_out(end/2+1:end);
+        result_YFout_path{kk,t}=P_out(end/2+1:end)-KRshifter;
+       
+        
+     end
+    end
+
+    %Other countries      
+    for kk=3:(params.N)-1
+         for t=1:capT
+              
+            %set up optimization problem for region kk
+            secalloc=laboralloc_path(majorregions.rowid2(kk):majorregions.rowid(kk),:,t);
+            Yvec=Y_path(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+            Lshifter=Lsectorpath_guess(majorregions.rowid2(kk):majorregions.rowid(kk),:,t);
+            Kshifter=Lsectorpath_guess(majorregions.rowid2(kk):majorregions.rowid(kk),:,t).*repmat(params.Vs(:,4)',majorregions.n(kk),1)...
+                    ./(repmat(params.Vs(:,1)',majorregions.n(kk),1)).*(w_path_guess(majorregions.rowid2(kk):majorregions.rowid(kk),t)...
+                    ./rP_path(majorregions.rowid2(kk):majorregions.rowid(kk),t));
+            Ltotal=sum(Lshifter,2);
+            Jlength=majorregions.n(kk);
+    
+            %define data for inequality constraints
+            linecons=RWParams.Zmax(Linecounts.rowid2(kk):Linecounts.rowid(kk));
+            Gammatrix=[zeros(length(RWParams.Gam{kk}),1) RWParams.Gam{kk}];
+            if linconscount<Linecounts.n(kk)
+                rng( 1 ) 
+                randvec=rand(Linecounts.n(kk),1);
+                randvec=randvec>linconscount/Linecounts.n(kk);
+                Gammatrix(randvec,:)=0;
+            else
+            end
+            stacker=[-eye(majorregions.n(kk)) eye(majorregions.n(kk))];
+            Gammatrix=sparse(Gammatrix*stacker);
+            Gammatrix=[Gammatrix;-Gammatrix];
+            linecons=[linecons;linecons];
+        
+            %define shifters for objective function
+            pg_s=pg_path_s(majorregions.rowid2(kk):majorregions.rowid(kk),:,t);
+            p_F_in=p_F_path_guess(:,t);
+            prices=repmat(p_E_path_guess(majorregions.rowid2(kk):majorregions.rowid(kk),t),1,params.I);
+            power=(repmat(params.Vs(:,2)',Jlength,1)+repmat(params.Vs(:,3)',Jlength,1));
+            shifter=pg_s.*(kappa +(prices./ (kappa .* p_F_in)).^(params.psi - 1)).^( params.psi/(params.psi-1).*repmat(params.Vs(:,3)',majorregions.n(kk),1) )...
+                .*(1+repmat(params.Vs(:,3)',majorregions.n(kk),1)./repmat(params.Vs(:,2)',majorregions.n(kk),1)).^(-repmat(params.Vs(:,2)',majorregions.n(kk),1)-repmat(params.Vs(:,2)',majorregions.n(kk),1))...
+                .*params.Z(majorregions.rowid2(kk):majorregions.rowid(kk)).*params.zsector(majorregions.rowid2(kk):majorregions.rowid(kk),:)...
+                .*Lshifter.^repmat(params.Vs(:,1)',majorregions.n(kk),1)...
+                .*Kshifter.^repmat(params.Vs(:,4)',majorregions.n(kk),1); 
+            shifter=shifter.*secalloc.^power;
+            KRshifter=regionParams.thetaS(majorregions.rowid2(kk):majorregions.rowid(kk)).*KR_path_S(majorregions.rowid2(kk):majorregions.rowid(kk),t)+...
+                      regionParams.thetaW(majorregions.rowid2(kk):majorregions.rowid(kk)).*KR_path_W(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+            KFshifter=KF_path(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+            
+            %define bounds
+            YFmax=KF_path(majorregions.rowid2(kk):majorregions.rowid(kk),t);
+            LB=[zeros(majorregions.n(kk),1);KRshifter];
+            UB=[10^3.*ones(majorregions.n(kk),1);YFmax+KRshifter+0.01];
+    
+            %define guess
+            guess=[KRshifter;KRshifter+0.0001];
+       
+            %solve market equilbrium    
+            inputfunc= @(x) obj(x,power,shifter,Jlength,KFshifter,KRshifter,p_F_in,priceshifterupdate(kk),params);
+            myconin = @(x) mycon(x,regionParams.B{kk},params)  ;
+            hess=@(x,lambda2) hessinterior(x,lambda2, power,shifter,KFshifter,KRshifter,p_F_in,regionParams.B{kk},params);
+            options = optimoptions('fmincon',...
+            'SpecifyObjectiveGradient',true,'SpecifyConstraintGradient',true,'MaxIterations',10^5,'MaxFunctionEvaluations',10^5,'Display','off',...
+            'HessianFcn',hess,'EnableFeasibilityMode',true,'BarrierParamUpdate','predictor-corrector');
+        
+            [P_out,fval,exitflag,output,lambda,GRAD,HESSIAN]=fmincon(inputfunc,guess,Gammatrix,sparse(linecons),[],[],sparse(LB),UB,myconin,options);
+            
+            result_price_path{kk,t}=Price_Solve(P_out,secalloc,shifter,Jlength,params);
+            result_Dout_path{kk,t}=P_out(1:end/2);
+            result_Yout_path{kk,t}=P_out(end/2+1:end);
+            result_YFout_path{kk,t}=P_out(end/2+1:end)-KRshifter;
+                       
+         end
+    end
+           
+    %places that are off the grid
+    kk=(params.N);
+    for t=1:capT
+        result_price_path{kk,t}=0;
+        result_Dout_path{kk,t}=0;
+        result_Yout_path{kk,t}=0;
+        result_YFout_path{kk,t}=0;
+    end
+   
+    for t=1:capT
+        for kk=1:(params.N)   
+            p_E_path_guess(majorregions.rowid2(kk):majorregions.rowid(kk),t)=result_price_path{kk,t}; 
+            D_path(majorregions.rowid2(kk):majorregions.rowid(kk),t)=  result_Dout_path{kk,t};
+            Y_path(majorregions.rowid2(kk):majorregions.rowid(kk),t)=  result_Yout_path{kk,t};
+            YF_path(majorregions.rowid2(kk):majorregions.rowid(kk),t)=  result_YFout_path{kk,t};
+            PI_path(majorregions.rowid2(kk):majorregions.rowid(kk),t)=sum( p_E_path_guess(majorregions.rowid2(kk):majorregions.rowid(kk),t)...
+                                                                       .*(D_path(majorregions.rowid2(kk):majorregions.rowid(kk),t)-...
+                                                                          Y_path(majorregions.rowid2(kk):majorregions.rowid(kk),t)))...
+                                                                         .*params.L(majorregions.rowid2(kk):majorregions.rowid(kk),1)./sum(params.L(majorregions.rowid2(kk):majorregions.rowid(kk),1));       end
+    end  
+
+    %out from cap T set prices just based on smoothing
+    p_E_path_guess(:,capT+1:T)=p_E_LR+(p_E_path_guess(:,capT)-p_E_LR).*exp(decayp*(1:T-capT));
+    D_path(:,capT+1:T+1)=D_LR+(D_path(:,capT)-D_LR).*exp(decayp*(1:T-capT+1));
+    Y_path(:,capT+1:T+1)=YE_LR+(Y_path(:,capT)-YE_LR).*exp(decayp*(1:T-capT+1));
+    YF_path(:,capT+1:T+1)=YF_LR+(YF_path(:,capT)-YF_LR).*exp(decayp*(1:T-capT+1));
+
+    %---------------------------------------------------------------
+    %-------           Update Transition Labour Market
+    %---------------------------------------------------------------
+   
+    for i=1:capT
+        %get capital vec
+        Ksector=Lsector.*repmat(params.Vs(:,4)',params.J,1)...
+            ./(repmat(params.Vs(:,1)',params.J,1)).*(w_path_guess(:,i)...
+            ./rP_path(:,i));
+        KP_path_guess(:,i)=sum(Ksector,2);
+    
+        [w_update(:,i), w_real_path(:,i), Incomefactor,PC(:,i), Xjdashs, PCs, Yjdashs_LR, Xjout ]=wage_update_ms( w_path_guess(:,i),p_E_path_guess(:,i),p_E_path_guess(:,i), p_F_path_guess(:,i), D_path(:,i),   Y_path(:,i),rP_path(:,i),  KP_path_guess(:,i), PI_path(:,i), 1, params);
+        relexp=Xjdashs./repmat(Xjdashs(:,1),1,I);
+        w_path_guess(:,i)=0.5*w_update(:,i)+(1-0.5)*w_path_guess(:,i);
+        %relab=laboralloc_path(:,:,i)./laboralloc_path(:,1,i)
+        %Lsectorpath_guess(:,:,i)=Lsectorpath_guess(:,:,i).*(1+0.2*(relexp-laboralloc_path(:,:,i))./laboralloc_path(:,:,i));
+        Lsectorpath_guess(:,:,i)= Lsectorpath_guess(:,:,i)./sum(Lsectorpath_guess(:,:,i),2).*params.L;
+    end
+
+    KP_path_guess(:,capT+1:T+1)=KP_LR+(KP_path_guess(:,capT)-KP_LR).*exp(decayp*(1:T-capT+1));
+
+
+ %-----------------------------get fossil fuel path------------------------
+    
+    %compute electricty and fossil fuel usage in industry and electricity
+    for t=1:T+1
+        e2_path(:,t)=sum(laboralloc_path(:,:,t).*repmat(D_path(:,t),1,params.I).*(repmat(params.Vs(:,2)',params.J,1)./(repmat(params.Vs(:,2)',params.J,1)+repmat(params.Vs(:,3)',params.J,1))),2);
+        fusage_ind_path(:,t)=e2_path(:,t).*(p_E_path_guess(:,t)./p_F_path_guess(:,t)).^params.psi;
+        fusage_power_path(:,t)=(YF_path(:,t)./KF_path(:,t).^params.alpha2).^(1/params.alpha1);
+        fusage_total_path(:,t)=(sum(fusage_power_path(:,t))+sum(fusage_ind_path(:,t)));
+    end
+    
+    %Get S_t from sequence
+    S_t=zeros(1,T+1);
+    S_t(1)=fusage_total_path(1);
+    for i=2:T+1
+         S_t(i)=fusage_total_path(i)+ S_t(i-1);
+    end
+    
+    %The initial fossil fuel price is a free variable, can look up in table
+    p_F_update(1)=p_F_path_guess(1);
+    
+    for t=1:T
+       p_F_update(t+1) = (p_F_update(t)-(interp1(GsupplyCurves.Q,GsupplyCurves.P,S_t(t))/(1+g)^t)*(1-1/((r_path(t))*(1+g))))*r_path(t);
+    end
+        
+    %get fossil sales path for income
+    fossilsales_path=fusage_total_path.*p_F_update.*regions.reserves;
+    
+    %compute max differeNce and update fossilfuel price
+    diffpF=max(abs(p_F_update(1:100)-p_F_path_guess(1:100))./p_F_path_guess(1:100));
+    p_F_path_guess=0.1*p_F_update+(1-0.1)*p_F_path_guess;
+
+ %-----------------------------Update Capital Market ------------------------
+
+%     capitalmarket;
+%     indic=zeros(1,capT);
+%     r_path(1:1)=1+(r_path(1:1)-1).*min(max((1-upda*Amarket(2:1+1)),0.99),1.01);
+%     r_path(capT+1:T)=R_LR+(r_path(:,capT)-R_LR).*exp(decayp*(1:T-capT));
+
+ %-----------------------------Update renewable investment ------------------------
+    
+    %out from cap T set prices just based on smoothing
+    %initial guess for sectoral allocations
+    decaymat=repmat(exp(decayp*(capT+1:T)),params.J,1,params.I);
+    decaymat=permute(decaymat,[1 3 2]);
+    Lsectorpath_guess(:,:,capT+1:T)=laboralloc_LR+(Lsectorpath_guess(:,capT)-laboralloc_LR).*decaymat;
+    w_path_guess(:,capT+1:T)=w_LR+(w_path_guess(:,capT)-w_LR).*exp(decayp*(1:T-capT));
+
+    %set battery prices
+    p_B_path=pB_shifter.*hoursofstorage.*p_B_path_guess;
+
+    
+    %If market price is above free entry price, increase renewable capital.
+    %Decrease otherwise
+    pE_S_FE_path=(p_KR_bar_path(:,1:end-1)+p_B_path(:,1:end-1)-(p_KR_bar_path(:,2:end)+p_B_path(:,1:end-1))*(1-params.deltaR)./r_path).*regionParams.costshifter./thetabar_path(:,1:end-1);
+    pE_S_FE_path=[pE_S_FE_path(:,1) pE_S_FE_path]-st;
+    Capinvest=p_E_path_guess>pE_S_FE_path;
+    Capdisinvest=p_E_path_guess<=pE_S_FE_path;
+    kfac=1+exp(-0.01*(0:T)).*max(min(0.2*((p_E_path_guess-pE_S_FE_path)./pE_S_FE_path),0.1),-0.1);
+
+    KR_path=KR_path_S+KR_path_W;
+    KR_LR=KR_LR_S+KR_LR_W;    
+
+    for i=2:T
+        KR_path_min(:,i)=KR_path(:,i-1)*(1-params.deltaR);
+    end
+    KR_path_min(:,1)=KR_path(:,1);
+     
+    %update the capital path   
+    KR_path_update=KR_path(:,2:end).*kfac(:,2:end);
+    KR_path_update=max(KR_path_update,KR_path_min);
+    updwk=1;
+    KR_path(:,2:end)=KR_path(:,2:end)*(1-updwk)+KR_path_update*updwk;
+    
+    %out from cap T set capital just based on smoothing
+    KR_path(:,capT+1:T)=KR_LR+(KR_path(:,capT)-KR_LR).*exp(decayp*(1:T-capT));
+
+    %split out into solar wind shares
+    KR_path_S=SShare_path.*KR_path;
+    KR_path_W=(1-SShare_path).*KR_path;
+
+    difftrans=max(max((kfac(:,2:capT)-1).*KR_path(:,2:capT)))     %get at substantial adjustments to K
+    ll=ll+1
+    
+
+end
+
+toc;
+
+
+%----------------------------------------------------------------------
+%                           Welfare in 2040
+%----------------------------------------------------------------------
+
+Init_weight=wage_init.*params.L+(1-params.beta)*r_path(:,1).*PC_path_guess(:,1).*KP_init...
+            +(1-params.beta)*(r_path(:,1).*KR_path(:,1).*p_KR_bar_path(:,1)+r_path(:,1).*KF_path(:,1).*PC_path_guess(:,1))...
+            +fossilsales_path(:,1);
+
+welfare_wagechange_2040=(log(w_path_guess(:,20)./PC_path_guess(:,20))-log(wage_init./PC_guess_init)).*(wage_init.*params.L./Init_weight);
+welfare_capitalchange_2040=(log(r_path(:,20).*PC_path_guess(:,20).*KP_path_guess(:,20)./PC_path_guess(:,20))-log(r_path(:,1).*PC_guess_init.*KP_init./PC_guess_init)).*((1-params.beta)*r_path(:,1).*PC_path_guess(:,1).*KP_init./Init_weight);
+
+%add up value of capital stock
+
+welfare_electricitychange_2040=(log((r_path(:,20).*KR_path(:,20).*p_KR_bar_path(:,20).*PC_path_guess(:,20)+r_path(:,20).*KF_path(:,20).*PC_path_guess(:,20))./PC_path_guess(:,20))...
+     -log((r_path(:,1).*KR_path(:,1).*p_KR_bar_path(:,1).*PC_path_guess(:,1)+r_path(:,1).*KF_path(:,1).*PC_path_guess(:,1)))).*...
+     ((1-params.beta)*(r_path(:,1).*KR_path(:,1).*p_KR_bar_path(:,1).*PC_path_guess(:,1)+r_path(:,1).*KF_path(:,1).*PC_path_guess(:,1))./Init_weight);
+welfare_fossilchange_2040=(log(fossilsales_path(:,20)./PC_path_guess(:,20))-log(fossilsales_path(:,1)./PC_guess_init)).*(fossilsales_path(:,1)./Init_weight);
+
+
+
+
+%----------------------------------------------------------------------
+%                           Supplementary Stuff
+%----------------------------------------------------------------------
+
+
+
+
+%save the path for the price of capital
+
+for kk=1:params.N
+    renewshare_path(kk,:)=1-(sum(YF_path(majorregions.rowid2(kk):majorregions.rowid(kk),:))./sum(Y_path(majorregions.rowid2(kk):majorregions.rowid(kk),:)));
+end
+
+for kk=1:params.N
+    renewshare_path(kk,:)=(sum(YR_path(majorregions.rowid2(kk):majorregions.rowid(kk),:))./sum(Y_path(majorregions.rowid2(kk):majorregions.rowid(kk),:)));
+end
