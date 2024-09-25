@@ -18,7 +18,7 @@ import Main.ModelConfiguration: ModelConfig
 export solve_transition
 
 
-function solve_transition(P::NamedTuple, D::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig)
+function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig, G::String)
     # set st 
     st = zeros(P.params.J, P.T + 1)
     if Subsidy == 1
@@ -48,11 +48,11 @@ function solve_transition(P::NamedTuple, D::NamedTuple, M::NamedTuple, S::NamedT
     renewshareUS = Matrix{Float64}(undef, 1, 501)
     renewshare_path_world = Matrix{Float64}(undef, 1, 501)
 
-    transeq = solve_transition_eq(D.R_LR, D.GsupplyCurves, P.decayp, P.T, P.params, S.sseq, D.KR_init_S, 
-                                D.KR_init_W, M.mrkteq, config.Initialprod, D.RWParams, curtailmentswitch, 
-                                M.p_KR_bar_init, M.laboralloc_init, D.regionParams, P.majorregions, P.Linecounts, P.linconscount, 
+    transeq = solve_transition_eq(DL.R_LR, DL.GsupplyCurves, P.decayp, P.T, P.params, S.sseq, DL.KR_init_S, 
+                                DL.KR_init_W, M.mrkteq, config.Initialprod, DL.RWParams, curtailmentswitch, 
+                                M.p_KR_bar_init, M.laboralloc_init, DL.regionParams, P.majorregions, P.Linecounts, P.linconscount, 
                                 P.kappa, P.regions, config.Transiter, st, config.hoursofstorage, pB_shifter, P.g, 
-                                D.wage_init, M.p_KR_init_S, M.p_KR_init_W, M.p_F_int, S.interp3)
+                                DL.wage_init, M.p_KR_init_S, M.p_KR_init_W, M.p_F_int, S.interp3)
 
 
     # ---------------------------------------------------------------------------- #
@@ -60,12 +60,12 @@ function solve_transition(P::NamedTuple, D::NamedTuple, M::NamedTuple, S::NamedT
     # ---------------------------------------------------------------------------- #
 
 
-    @views Init_weight .= D.wage_init .* P.params.L .+ (1 - P.params.beta) .* transeq.r_path[:, 1] .* transeq.PC_path_guess[:, 1] .* M.mrkteq.KP_init .+
+    @views Init_weight .= DL.wage_init .* P.params.L .+ (1 - P.params.beta) .* transeq.r_path[:, 1] .* transeq.PC_path_guess[:, 1] .* M.mrkteq.KP_init .+
                     (1 - P.params.beta) .* (transeq.r_path[:, 1] .* transeq.KR_path[:, 1] .* transeq.p_KR_bar_path[:, 1] .+ transeq.r_path[:, 1] .* transeq.KF_path[:, 1] .* transeq.PC_path_guess[:, 1]) .+
                     transeq.fossilsales_path[:, 1]
 
-    @views welfare_wagechange_2040 .= (log.(transeq.w_path_guess[:, 20] ./ transeq.PC_path_guess[:, 20]) .- log.(D.wage_init ./ M.mrkteq.PC_guess_init)) .*
-                                (D.wage_init .* P.params.L ./ Init_weight)
+    @views welfare_wagechange_2040 .= (log.(transeq.w_path_guess[:, 20] ./ transeq.PC_path_guess[:, 20]) .- log.(DL.wage_init ./ M.mrkteq.PC_guess_init)) .*
+                                (DL.wage_init .* P.params.L ./ Init_weight)
 
     @views welfare_capitalchange_2040 .= (log.(transeq.r_path[:, 20] .* transeq.PC_path_guess[:, 20] .* transeq.KP_path_guess[:, 20] ./ transeq.PC_path_guess[:, 20]) .-
                                     log.(transeq.r_path[:, 1] .* M.mrkteq.PC_guess_init .* M.mrkteq.KP_init ./ M.mrkteq.PC_guess_init)) .*
@@ -104,7 +104,7 @@ function solve_transition(P::NamedTuple, D::NamedTuple, M::NamedTuple, S::NamedT
     p_F_path_guess = transeq.p_F_path_guess
 
     if config.hoursofstorage==0
-        @save "Guesses/p_F_path_guess_saved.jld2" p_F_path_guess
+        @save "$G/p_F_path_guess_saveDL.jld2" p_F_path_guess
     end
 
     return (

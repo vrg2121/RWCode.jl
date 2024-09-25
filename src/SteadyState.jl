@@ -51,7 +51,7 @@ Calculating a 3D Interpolation (MATLAB interp3()) using Interpolations.jl:
 """
 
 
-function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::ModelConfig)
+function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::ModelConfig, G::String)
 
     pB_shifter = P.pB_shifter
     if config.RunBatteries == 1
@@ -75,7 +75,7 @@ function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::
     sseq = solve_power_output(D.RWParams, P.params, config.RunBatteries, config.RunCurtailment,
                                                 config.Initialprod, D.R_LR, P.majorregions, P.Linecounts, P.linconscount,
                                                 D.regionParams, curtailmentswitch, interp3,
-                                                P.T, P.kappa, M.mrkteq, config, pB_shifter);
+                                                P.T, P.kappa, M.mrkteq, config, pB_shifter, G);
 
     println("Steady State diffK= ", sseq.diffK)
     println("Steady State diffp= ", sseq.diffp)
@@ -111,14 +111,14 @@ function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::
     laboralloc_LR = sseq.laboralloc_LR
 
     if config.hoursofstorage == 0
-        @save "Guesses/laboralloc_LR_guess.jld2" laboralloc_LR
-        @save "Guesses/KR_LR_S_guess.jld2" KR_LR_S
-        @save "Guesses/KR_LR_W_guess.jld2" KR_LR_W
-        @save "Guesses/p_E_LR_guess.jld2" p_E_LR
-        @save "Guesses/w_LR_guess.jld2" w_LR
-        @save "Guesses/Dout_guess_LR.jld2" result_Dout_LR
-        @save "Guesses/Yout_guess_LR.jld2" result_Yout_LR
-        @save "Guesses/PC_guess_LR.jld2" PC_guess_LR
+        @save "$G/laboralloc_LR_guess.jld2" laboralloc_LR
+        @save "$G/KR_LR_S_guess.jld2" KR_LR_S
+        @save "$G/KR_LR_W_guess.jld2" KR_LR_W
+        @save "$G/p_E_LR_guess.jld2" p_E_LR
+        @save "$G/w_LR_guess.jld2" w_LR
+        @save "$G/Dout_guess_LR.jld2" result_Dout_LR
+        @save "$G/Yout_guess_LR.jld2" result_Yout_LR
+        @save "$G/PC_guess_LR.jld2" PC_guess_LR
     end
 
 

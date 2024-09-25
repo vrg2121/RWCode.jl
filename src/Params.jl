@@ -8,7 +8,7 @@ export setup_parameters
 # import functions
 using Main.ParamsFunctions
 
-function setup_parameters()
+function setup_parameters(D::String)
     # preallocate parameters
     thetaS = Vector{Float64}(undef, 2531)
     thetaW = Vector{Float64}(undef, 2531)
@@ -17,9 +17,9 @@ function setup_parameters()
     #                               Create Parameters                              #
     # ---------------------------------------------------------------------------- #
 
-    regions, majorregions, Linecounts = load_parameters_csv()
+    regions, majorregions, Linecounts = load_parameters_csv(D)
 
-    params = fill_params(regions, majorregions, Linecounts)
+    params = fill_params(regions, majorregions, Linecounts, D)
 
     # renewable potential
     capacityfactorS = 1
@@ -71,29 +71,29 @@ function setup_parameters()
     decayp = -0.05
 
     return (
-    params = params,
-    thetaS = thetaS,
-    theta = theta,
-    thetaW = thetaW,
-    regions = regions,
-    majorregions = majorregions,
-    popelas = popelas,
-    T = T,
-    Linecounts = Linecounts,
-    linconscount = linconscount,
-    kappa = kappa,
-    updw_w = updw_w,
-    upw_z = upw_z,
-    curtailmentswitch = curtailmentswitch,
-    decayp = decayp,
-    hoursofstorage = hoursofstorage,
-    pB_shifter = pB_shifter,
-    pkw_solar = pkw_solar,
-    pkwh_B = pkwh_B,
-    g = g,
-    upda = upda,
-    updwF = updwF,
-    updwk = updwk
+        params = params,
+        thetaS = thetaS,
+        theta = theta,
+        thetaW = thetaW,
+        regions = regions,
+        majorregions = majorregions,
+        popelas = popelas,
+        T = T,
+        Linecounts = Linecounts,
+        linconscount = linconscount,
+        kappa = kappa,
+        updw_w = updw_w,
+        upw_z = upw_z,
+        curtailmentswitch = curtailmentswitch,
+        decayp = decayp,
+        hoursofstorage = hoursofstorage,
+        pB_shifter = pB_shifter,
+        pkw_solar = pkw_solar,
+        pkwh_B = pkwh_B,
+        g = g,
+        upda = upda,
+        updwF = updwF,
+        updwk = updwk
     )
 
 end

@@ -1,14 +1,52 @@
 """
-To set up the package, in the Julia REPL type the following:
+To set up the package:
+
+# ---------------------------------------------------------------------------- #
+#        Clone the Package and Set Environment with Package Dependencies       #
+# ---------------------------------------------------------------------------- #
+
+# clone the package from git
+shell> git clone https://github.com/vrg2121/RWCode.jl.git
+Cloning into 'RWCode.jl'...
+...
+
+# go to your preferred julia IDE or in the CLI simply type "julia"
+julia> ]
+
+(@v1.10) pkg> activate RWCode.jl
+Activating project at `~/RWCode.jl`
+
+(RWCodeJulia) pkg> instantiate
+
+# for a detailed explanation see: https://pkgdocs.julialang.org/v1/environments/#Using-someone-else's-project
+
+
+# ---------------------------------------------------------------------------- #
+#                    Download Data and Guesses for the Model                   #
+# ---------------------------------------------------------------------------- #
+
+
+# ---------------------------------------------------------------------------- #
+#              Set Paths to Data and Guesses, Configure Model Run              #
+# ---------------------------------------------------------------------------- #
 
 using RWCodeJulia
-using RWCodeJulia.ParameterizeRun
+using RWCodeJulia.ModelConfiguration
 
 # configure model by following prompts
-UserConfig = ModelConfig()
+config = ModelConfig()
+
+# set path to the Data folder
+D = "C:/Users/UserName/path/to/Data"
+
+# set path to the Guesses folder
+G = "C:/Users/UserName/path/to/Guesses"
+
+# set path for Results output
+R = "C:/Users/UserName/path/to/Results"
 
 # function that runs the model
-run_rwcode(UserConfig)
+run_rwcode(config, D, G, R)
 
 """
 
@@ -25,6 +63,22 @@ include("./ModelConfiguration.jl")
 import .ModelConfiguration: ModelConfig
 println("Set model configurations by creating struct using ModelConfig(). For example: config = ModelConfig()")
 #println("Create path to folder to store results.")
+
+######################################################
+# create path to Results folder
+
+# R = "C:/Users/vrg2121/.julia/dev/RWCodeJulia/Results"
+
+######################################################
+# create path to Data folder
+
+# D = "C:/Users/vrg2121/.julia/dev/RWCodeJulia/Data"
+
+#######################################################
+# create path to Guesses folder
+# G = "C:/Users/vrg2121/.julia/dev/RWCodeJulia/Guesses"
+
+
 
 # ---------------------------------------------------------------------------- #
 #                         Import all Relevant Functions                        #
@@ -82,28 +136,28 @@ include("./WriteDataExog.jl")
 import .WriteDataExog: writedata_exog
 
 
-function run_rwcode(config::ModelConfig)
+function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
 
     # ---------------------------------------------------------------------------- #
     #                               Set Up Parameters                              #
     # ---------------------------------------------------------------------------- #
 
     println("Setting up parameters...")
-    P = setup_parameters();
+    P = setup_parameters(D);
 
     # ---------------------------------------------------------------------------- #
     #                                  Data Loads                                  #
     # ---------------------------------------------------------------------------- #
     
     println("Loading data inputs...")
-    D = load_data(P)
+    DL = load_data(P, D)
     
     # ---------------------------------------------------------------------------- #
     #                              Initial Equilibrium                             #
     # ---------------------------------------------------------------------------- #
 
     println("Solving initial equilibrium...")    
-    M = solve_market(P, D, config);
+    M = solve_market(P, DL, config, G);
     
     
     # ---------------------------------------------------------------------------- #
@@ -111,7 +165,7 @@ function run_rwcode(config::ModelConfig)
     # ---------------------------------------------------------------------------- #
 
     println("Solving initial long run equilibrium...")
-    S = solve_steadystate(P, D, M, config)
+    S = solve_steadystate(P, DL, M, config, G)
 
     # ---------------------------------------------------------------------------- #
     #                           Run Transitional Dynamics                          #
@@ -121,20 +175,20 @@ function run_rwcode(config::ModelConfig)
         # ---------------------- Run Transition without Subsidy ---------------------- #
         println("Solving transitional dynamics without Subsidy...")
         Subsidy = 0
-        T = solve_transition(P, D, M, S, Subsidy, config)
+        T = solve_transition(P, DL, M, S, Subsidy, config, G)
 
         println("Writing outputs of transitional dynamics without Subsidy...")
-        writedata(P, D, M, S, T, Subsidy, config)
-        #writedata(P, D, M, S, T, Subsidy, config, path)
+        writedata(P, DL, M, S, T, Subsidy, config, R)
+        #writedata(P, DL, M, S, T, Subsidy, config, path)
 
         # ------------------------ Run Transition with Subsidy ----------------------- #
         println("Solving transitional dynamics with Subsidy...")
         Subsidy = 1
-        TS = solve_transition(P, D, M, S, Subsidy, config)
+        TS = solve_transition(P, DL, M, S, Subsidy, config, G)
 
         println("Writing outputs of transitional dynamics with Subsidy...")
-        writedata(P, D, M, S, TS, Subsidy, config)
-        #writedata(P, D, M, S, TS, Subsidy, config, path)
+        writedata(P, DL, M, S, TS, Subsidy, config, R)
+        #writedata(P, DL, M, S, TS, Subsidy, config, path)
 
     end
 
@@ -155,13 +209,13 @@ function run_rwcode(config::ModelConfig)
             Subsidy = 0
 
             println("Solving long run equilibrium when battery storage hours = $(config.hoursofstorage)...")
-            SB = solve_steadystate(P, D, M, config)
+            SB = solve_steadystate(P, DL, M, config, G)
 
             println("Solving transitional dynamics when battery storage hours = $(config.hoursofstorage)...")
-            TB = solve_transition(P, D, M, SB, Subsidy, config)
+            TB = solve_transition(P, DL, M, SB, Subsidy, config, G)
             
             println("Writing outputs when battery storage hours = $(config.hoursofstorage)...")
-            writedata_battery(P, M, SB, TB, config)
+            writedata_battery(P, M, SB, TB, config, R)
         end
     end
 
@@ -171,7 +225,7 @@ function run_rwcode(config::ModelConfig)
     if config.RunImprovement == 1
         #include("./SteadyStateImp.jl")
         #SI = solve_steadystate_imp()
-        #writedata_imp(P, D, M, SI, config)
+        #writedata_imp(P, DL, M, SI, config)
     end
 
     # ---------------------------------------------------------------------------- #
@@ -181,13 +235,13 @@ function run_rwcode(config::ModelConfig)
         config.hoursofstorage = 0
         for exogindex in 3:-1:1
             println("Solving long run equilibrium with exogenous tech when exog index = $exogindex...")
-            SE = solve_steadystate_exog(P, D, M, config, exogindex)
+            SE = solve_steadystate_exog(P, DL, M, config, exogindex, G)
 
             println("Solving transitional dynamics with exogenous tech when exog index = $exogindex...")
-            TE = solve_transition_exog(P, D, M, SE, config, exogindex)
+            TE = solve_transition_exog(P, DL, M, SE, config, exogindex)
             
             println("Writing outputs with exogenous tech when exog index = $exogindex...")
-            writedata_exog(TE, exogindex)
+            writedata_exog(TE, exogindex, R)
         end
             
     end
@@ -203,13 +257,13 @@ function run_rwcode(config::ModelConfig)
         config.hoursofstorage = 12
 
         println("Solving long run equilibrium with curtailment (hours of battery storage = 12)...")
-        SC = solve_steadystate(P, D, M, config)
+        SC = solve_steadystate(P, DL, M, config, G)
 
         println("Solving transitional dynamics with curtailment (hours of battery storage = 12)...")
-        TC = solve_transition(P, D, M, SC, Subsidy, config)
+        TC = solve_transition(P, DL, M, SC, Subsidy, config, G)
 
         println("Writing output for curtailment (hours of battery storage = 12)...")
-        writedata_battery(P, M, SC, TC, config)
+        writedata_battery(P, M, SC, TC, config, R)
     end
 
 

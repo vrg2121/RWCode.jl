@@ -10,11 +10,12 @@ import Plots: plot, plot!
 import DataFrames: DataFrame
 import JLD2: @save
 import SparseArrays: sparse
+import Main.ModelConfiguration: ModelConfig
 
 export solve_transition_exog
 
 
-function solve_transition_exog(P, D, M, S, config, exogindex)
+function solve_transition_exog(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, config::ModelConfig, exogindex::Int64)
 
     # set st 
     st = zeros(P.params.J, P.T + 1)
@@ -31,11 +32,11 @@ function solve_transition_exog(P, D, M, S, config, exogindex)
     renewshare_path_world = Matrix{Float64}(undef, 1, 501)
 
 
-    transeq = solve_transitioneq_exog(D.R_LR, D.GsupplyCurves, P.decayp, P.T, P.params, S.sseqE, D.KR_init_S, 
-                                D.KR_init_W, M.mrkteq, config.Initialprod, D.RWParams, 
-                                M.p_KR_bar_init, M.laboralloc_init, D.regionParams, P.majorregions, P.Linecounts, P.linconscount, 
+    transeq = solve_transitioneq_exog(DL.R_LR, DL.GsupplyCurves, P.decayp, P.T, P.params, S.sseqE, DL.KR_init_S, 
+                                DL.KR_init_W, M.mrkteq, config.Initialprod, DL.RWParams, 
+                                M.p_KR_bar_init, M.laboralloc_init, DL.regionParams, P.majorregions, P.Linecounts, P.linconscount, 
                                 P.kappa, P.regions, config.Transiter, st, config.hoursofstorage, P.pB_shifter, P.g, 
-                                D.wage_init, M.p_KR_init_S, M.p_KR_init_W, M.p_F_int, exogindex, D.projectionssolar, D.projectionswind)
+                                DL.wage_init, M.p_KR_init_S, M.p_KR_init_W, M.p_F_int, exogindex, DL.projectionssolar, DL.projectionswind)
 
 
     # ---------------------------------------------------------------------------- #
@@ -43,12 +44,12 @@ function solve_transition_exog(P, D, M, S, config, exogindex)
     # ---------------------------------------------------------------------------- #
 
 
-    @views Init_weight .= D.wage_init .* P.params.L .+ (1 - P.params.beta) .* transeq.r_path[:, 1] .* transeq.PC_path_guess[:, 1] .* M.mrkteq.KP_init .+
+    @views Init_weight .= DL.wage_init .* P.params.L .+ (1 - P.params.beta) .* transeq.r_path[:, 1] .* transeq.PC_path_guess[:, 1] .* M.mrkteq.KP_init .+
                     (1 - P.params.beta) .* (transeq.r_path[:, 1] .* transeq.KR_path[:, 1] .* transeq.p_KR_bar_path[:, 1] .+ transeq.r_path[:, 1] .* transeq.KF_path[:, 1] .* transeq.PC_path_guess[:, 1]) .+
                     transeq.fossilsales_path[:, 1]
 
-    @views welfare_wagechange_2040 .= (log.(transeq.w_path_guess[:, 20] ./ transeq.PC_path_guess[:, 20]) .- log.(D.wage_init ./ M.mrkteq.PC_guess_init)) .*
-                                (D.wage_init .* P.params.L ./ Init_weight)
+    @views welfare_wagechange_2040 .= (log.(transeq.w_path_guess[:, 20] ./ transeq.PC_path_guess[:, 20]) .- log.(DL.wage_init ./ M.mrkteq.PC_guess_init)) .*
+                                (DL.wage_init .* P.params.L ./ Init_weight)
 
     @views welfare_capitalchange_2040 .= (log.(transeq.r_path[:, 20] .* transeq.PC_path_guess[:, 20] .* transeq.KP_path_guess[:, 20] ./ transeq.PC_path_guess[:, 20]) .-
                                     log.(transeq.r_path[:, 1] .* M.mrkteq.PC_guess_init .* M.mrkteq.KP_init ./ M.mrkteq.PC_guess_init)) .*

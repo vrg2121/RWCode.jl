@@ -4,9 +4,8 @@ module DataLoadsFunc
 import CSV: CSV
 import DataFrames: DataFrame
 import LinearAlgebra: Diagonal
-#import MAT
 import Tables: Tables
-#import LazyGrids
+
 
 # load functions
 using Main.DataAdjustments
@@ -107,13 +106,13 @@ mutable struct StructGsupply
     end
 end
 
-function load_csv_data()
-    regions_all = CSV.File("Data/ModelDataset/Regions_sorted.csv", header=true) |> DataFrame
-    Linedata = CSV.File("Data/ModelDataset/Linedata.csv") |> DataFrame
-    majorregions_all = CSV.File("Data/ModelDataset/majorregions.csv") |> DataFrame
-    Fossilcapital = CSV.File("Data/ModelDataset/aggcap_ffl.csv")  |> DataFrame
-    Renewablecapital = CSV.File("Data/ModelDataset/aggcap_rnw.csv") |> DataFrame
-    Electricityregionprices = CSV.File("Data/ModelDataset/Region_prices.csv") |> DataFrame
+function load_csv_data(D::String)
+    regions_all = CSV.File("$D/ModelDataset/Regions_sorted.csv", header=true) |> DataFrame
+    Linedata = CSV.File("$D/ModelDataset/Linedata.csv") |> DataFrame
+    majorregions_all = CSV.File("$D/ModelDataset/majorregions.csv") |> DataFrame
+    Fossilcapital = CSV.File("$D/ModelDataset/aggcap_ffl.csv")  |> DataFrame
+    Renewablecapital = CSV.File("$D/ModelDataset/aggcap_rnw.csv") |> DataFrame
+    Electricityregionprices = CSV.File("$D/ModelDataset/Region_prices.csv") |> DataFrame
     return regions_all, Linedata, majorregions_all, Fossilcapital, Renewablecapital, Electricityregionprices
 end
 
@@ -126,18 +125,18 @@ function w_i!(wage_init::Vector, regions::DataFrame)
 end
 
 function create_RWParams!(RWParams::StructRWParams, majorregions_all::DataFrame, majorregions::DataFrame, regions::DataFrame, Linedata::DataFrame, params, wage_init::Vector{Float64},
-    thetaS::Vector{Float64}, thetaW::Vector{Float64}, popelas, rP_LR)
+    thetaS::Vector{Float64}, thetaW::Vector{Float64}, popelas::Float64, rP_LR, D::String)
     # create kmatrix
-    Kmatrix = Matrix(CSV.File("Data/ModelDataset/Kmatrix.csv", drop=[1]) |> DataFrame)
+    Kmatrix = Matrix(CSV.File("$D/ModelDataset/Kmatrix.csv", drop=[1]) |> DataFrame)
     RWParams.Kmatrix .= Matshifter(Kmatrix)
 
     # create A
-    Kmx = Matrix(CSV.File("Data/ModelDataset/Kmatrix_1.csv") |> DataFrame)[:, 2:majorregions_all.rowid[1]]
+    Kmx = Matrix(CSV.File("$D/ModelDataset/Kmatrix_1.csv") |> DataFrame)[:, 2:majorregions_all.rowid[1]]
     RWParams.A[1] .= Matshifter(Kmx)
     RWParams.Adash[1] .= Matshifter(Kmx)
 
     # create Omatrix
-    Omatrix = CSV.File("Data/ModelDataset/Omatrix_1.csv", drop=[1]) |> DataFrame
+    Omatrix = CSV.File("$D/ModelDataset/Omatrix_1.csv", drop=[1]) |> DataFrame
     Omatrix = Vector(Omatrix[!,1])
     RWParams.O[1] .= Diagonal(Omatrix)
 
@@ -158,14 +157,14 @@ function create_RWParams!(RWParams::StructRWParams, majorregions_all::DataFrame,
 
     # fill the rest of A, Adash, O in a for loop
     for jj in 2:(size(majorregions_all, 1)-1)
-    #stringer = "Data/ModelDataset/Kmatrix_$(jj).csv"
-    #stringer2 = "Data/ModelDataset/Omatrix_$(jj).csv"
+    #stringer = "$D/ModelDataset/Kmatrix_$(jj).csv"
+    #stringer2 = "$D/ModelDataset/Omatrix_$(jj).csv"
     #Kmatrix = Matrix(CSV.File(stringer) |> DataFrame)
-    Kmatrix = CSV.File("Data/ModelDataset/Kmatrix_$(jj).csv") |> Tables.matrix
+    Kmatrix = CSV.File("$D/ModelDataset/Kmatrix_$(jj).csv") |> Tables.matrix
     Kmatrix = Kmatrix[:, majorregions_all.rowid[jj-1] + 2 : majorregions_all.rowid[jj]]
 
     #Omatrix = Matrix(CSV.File(stringer2, drop=[1]) |> DataFrame)
-    Omatrix = CSV.File("Data/ModelDataset/Omatrix_$(jj).csv", drop=[1]) |> Tables.matrix
+    Omatrix = CSV.File("$D/ModelDataset/Omatrix_$(jj).csv", drop=[1]) |> Tables.matrix
     RWParams.A[jj] .= Matshifter(Kmatrix)
     RWParams.Adash[jj] .= Matshifter(Kmatrix)
     Omatrix = Vector(Omatrix[:,1])
@@ -235,25 +234,25 @@ function create_RWParams!(RWParams::StructRWParams, majorregions_all::DataFrame,
 end
 
 function fill_RWParams(majorregions_all::DataFrame, majorregions::DataFrame, regions::DataFrame, Linedata::DataFrame, params, wage_init::Vector{Float64}, thetaS::Vector{Float64}, 
-    thetaW::Vector{Float64}, popelas, rP_LR)
+    thetaW::Vector{Float64}, popelas::Float64, rP_LR::Float64, D::String)
     RWParams = StructRWParams()
-    create_RWParams!(RWParams, majorregions_all, majorregions, regions, Linedata, params, wage_init, thetaS, thetaW, popelas, rP_LR)
+    create_RWParams!(RWParams, majorregions_all, majorregions, regions, Linedata, params, wage_init, thetaS, thetaW, popelas, rP_LR, D)
     return RWParams
 end
 
-function sec_shares!(secshares::Matrix, sectoralempshares::Matrix)
-    secshares_df = CSV.File("Data/ModelDataset/secshares.csv") |> DataFrame
+function sec_shares!(secshares::Matrix, sectoralempshares::Matrix, D::String)
+    secshares_df = CSV.File("$D/ModelDataset/secshares.csv") |> DataFrame
     secshares .= Matrix{Float64}(secshares_df[:, 2:3])
 
-    sectoralempshares_df = CSV.read("Data/ModelDataset/locationempshares.csv", DataFrame)
+    sectoralempshares_df = CSV.read("$D/ModelDataset/locationempshares.csv", DataFrame)
     sectoralempshares .= Matrix{Union{Missing, Float64}}(sectoralempshares_df)
     sectoralempshares .= coalesce.(sectoralempshares, 0.0)
     return secshares, sectoralempshares
 end
 
-function create_FFsupplyCurves(FFsupplyCurves::StructFFsupplyCurves)
+function create_FFsupplyCurves(FFsupplyCurves::StructFFsupplyCurves, D::String)
 
-    countriesCurves = CSV.File("Data/FossilFuels/country_curves.csv") |> DataFrame
+    countriesCurves = CSV.File("$D/FossilFuels/country_curves.csv") |> DataFrame
     countries = unique(countriesCurves[:, :region_name])
     totalCountries = length(countries)
     maxPoints = 15202
@@ -289,15 +288,15 @@ function create_FFsupplyCurves(FFsupplyCurves::StructFFsupplyCurves)
 
 end
 
-function fill_FFsupply()
+function fill_FFsupply(D::String)
     FFsupplyCurves = StructFFsupplyCurves()
-    create_FFsupplyCurves(FFsupplyCurves)
+    create_FFsupplyCurves(FFsupplyCurves, D)
     return FFsupplyCurves
 end
 
-function create_StructGsupply!(GsupplyCurves::StructGsupply)
+function create_StructGsupply!(GsupplyCurves::StructGsupply, D::String)
 
-    globalCurve = CSV.File("Data/FossilFuels/global_curve.csv") |> DataFrame
+    globalCurve = CSV.File("$D/FossilFuels/global_curve.csv") |> DataFrame
 
     GsupplyCurves.Q[1:67517, 1] .= Vector{Float64}(globalCurve[:, :Q]) .* 100000
     GsupplyCurves.P[1:67517, 1] .= Vector{Float64}(globalCurve[:, :P_smooth]) ./ 200
@@ -307,9 +306,9 @@ function create_StructGsupply!(GsupplyCurves::StructGsupply)
 
 end
 
-function fill_Gsupply()
+function fill_Gsupply(D::String)
     GsupplyCurves = StructGsupply()
-    create_StructGsupply!(GsupplyCurves)
+    create_StructGsupply!(GsupplyCurves, D)
     return GsupplyCurves
 end
 
@@ -321,10 +320,10 @@ function linear_map()
     return storagey, storagex
 end
 
-function create_curtmat!(curtmatno::Matrix, curtmat4::Matrix, curtmat12::Matrix, curtmat::Array)
-    curtmatno .= DataFrame(CSV.File("Data/CurtailmentUS/heatmap_us_mat_nostorage.csv", header = false)) |> Matrix
-    curtmat4 .= DataFrame(CSV.File("Data/CurtailmentUS/heatmap_us_mat_4hour.csv", header = false)) |> Matrix
-    curtmat12 .= DataFrame(CSV.File("Data/CurtailmentUS/heatmap_us_mat_12hour.csv", header = false)) |> Matrix
+function create_curtmat!(curtmatno::Matrix, curtmat4::Matrix, curtmat12::Matrix, curtmat::Array, D::String)
+    curtmatno .= DataFrame(CSV.File("$D/CurtailmentUS/heatmap_us_mat_nostorage.csv", header = false)) |> Matrix
+    curtmat4 .= DataFrame(CSV.File("$D/CurtailmentUS/heatmap_us_mat_4hour.csv", header = false)) |> Matrix
+    curtmat12 .= DataFrame(CSV.File("$D/CurtailmentUS/heatmap_us_mat_12hour.csv", header = false)) |> Matrix
 
     n = size(curtmatno, 1)
     x = range(start = 0.0, stop = 1.0, length=n)  # Change these to reflect your actual coordinate grids
@@ -348,8 +347,8 @@ function create_curtmat!(curtmatno::Matrix, curtmat4::Matrix, curtmat12::Matrix,
     return curtmat, samplepointssolar, samplepointswind, samplepointsbat
 end
 
-function battery_req!(batteryrequirements::Matrix)
-    batteryrequirements_df = DataFrame(CSV.File("Data/CurtailmentUS/Curtailment_vs_Battery.csv")) |> Matrix
+function battery_req!(batteryrequirements::Matrix, D::String)
+    batteryrequirements_df = DataFrame(CSV.File("$D/CurtailmentUS/Curtailment_vs_Battery.csv")) |> Matrix
     batteryrequirements[1:end-1, :] .= batteryrequirements_df[:, [1, end]]
     batteryrequirements[15, 1] = 12
     batteryrequirements[15, 2] = 100

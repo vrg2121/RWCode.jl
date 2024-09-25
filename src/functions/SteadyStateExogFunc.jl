@@ -91,37 +91,37 @@ function new_grad2(g, x...)
     return
 end
 
-function ss_load_mat()
+function ss_load_mat(G::String)
 
-    alr = matopen("Guesses/alloc_LR_guess.mat")
+    alr = matopen("$G/alloc_LR_guess.mat")
     laboralloc_LR = read(alr, "laboralloc_LR")
     close(alr)
 
-    kls = matopen("Guesses/KR_LR_S_guess.mat")
+    kls = matopen("$G/KR_LR_S_guess.mat")
     KR_LR_S = read(kls, "KR_LR_S")
     close(kls)
 
-    klw = matopen("Guesses/KR_LR_W_guess.mat")
+    klw = matopen("$G/KR_LR_W_guess.mat")
     KR_LR_W = read(klw, "KR_LR_W")
     close(klw)
 
-    pel = matopen("Guesses/p_E_LR_guess.mat")
+    pel = matopen("$G/p_E_LR_guess.mat")
     p_E_LR = read(pel, "p_E_LR")
     close(pel)
 
-    wl = matopen("Guesses/w_LR_guess.mat")
+    wl = matopen("$G/w_LR_guess.mat")
     w_LR = read(wl, "w_LR")
     close(wl)
 
-    dol = matopen("Guesses/Dout_guess_LR.mat")
+    dol = matopen("$G/Dout_guess_LR.mat")
     result_Dout_LR = read(dol, "result_Dout_LR")
     close(dol)
 
-    yol = matopen("Guesses/Yout_guess_LR.mat")
+    yol = matopen("$G/Yout_guess_LR.mat")
     result_Yout_LR = read(yol, "result_Yout_LR")
     close(yol)
 
-    pcl = matopen("Guesses/PC_guess_LR.mat")
+    pcl = matopen("$G/PC_guess_LR.mat")
     PC_guess_LR = read(pcl, "PC_guess_LR")
     close(pcl)
     return laboralloc_LR, KR_LR_S, KR_LR_W, p_E_LR, w_LR, result_Dout_LR, result_Yout_LR, PC_guess_LR
@@ -179,9 +179,9 @@ function solve_power_output_exog(RWParams::StructRWParams, params::StructParams,
     Initialprod::Int, R_LR::Float64, majorregions::DataFrame, Linecounts::DataFrame, linconscount::Int,
     regionParams::StructRWParams, pB_shifter::Float64, T::Int, mrkteq::NamedTuple, 
     projectionssolar::Matrix, projectionswind::Matrix, config::ModelConfig, exogindex::Int, 
-    p_KR_init_S::Float64, p_KR_init_W::Float64, kappa::Int)
+    p_KR_init_S::Float64, p_KR_init_W::Float64, kappa::Int, G::String)
 
-    laboralloc_LR, KR_LR_S, KR_LR_W, p_E_LR, w_LR, result_Dout_LR, result_Yout_LR, PC_guess_LR = ss_load_mat();
+    laboralloc_LR, KR_LR_S, KR_LR_W, p_E_LR, w_LR, result_Dout_LR, result_Yout_LR, PC_guess_LR = ss_load_mat(G);
 
     global laboralloc_LR
     global KR_LR_S

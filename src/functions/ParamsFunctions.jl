@@ -11,16 +11,16 @@ import DataFrames: DataFrame
 import MAT: matopen
 import Tables: Tables
 
-function load_parameters_csv()
+function load_parameters_csv(D::String)
     # load CSV files
-    regions = CSV.File("Data/ModelDataset/Regions_sorted.csv", header=true) |> DataFrame
+    regions = CSV.File("$D/ModelDataset/Regions_sorted.csv", header=true) |> DataFrame
     replace!(regions.solar_mean, "NA" => "0.0")
     regions.solar_mean = parse.(Float64, regions.solar_mean)
 
-    majorregions = CSV.File("Data/ModelDataset/majorregions.csv") |> DataFrame
+    majorregions = CSV.File("$D/ModelDataset/majorregions.csv") |> DataFrame
     majorregions.rowid2 = [1; majorregions.rowid[1:end-1] .+ 1]
 
-    Linecounts = CSV.File("Data/ModelDataset/Linecountsregion.csv") |> DataFrame
+    Linecounts = CSV.File("$D/ModelDataset/Linecountsregion.csv") |> DataFrame
     Linecounts.rowid2 = [1; Linecounts.rowid[1:end-1] .+ 1]
     return regions, majorregions, Linecounts
 end
@@ -108,7 +108,7 @@ end
 
 # create a function to fill params
 function create_params!(params::StructParams, z_path::String, zsector_path::String, tau_paths::Vector{String}, 
-                        regions::DataFrame, majorregions::DataFrame, Linecounts::DataFrame)
+                        regions::DataFrame, majorregions::DataFrame, Linecounts::DataFrame, D::String)
     # Load Z from its file and fill the pre-allocated matrix
     z_file = matopen(z_path)
     params.Z .= read(z_file, "Z")::Matrix{Float64}
@@ -134,7 +134,7 @@ function create_params!(params::StructParams, z_path::String, zsector_path::Stri
     params.tau1s .= params.tau[end]
 
     # load in sectoral shares
-    secshares = CSV.File("Data/ModelDataset/secshares.csv", select=[2, 3]) |> DataFrame
+    secshares = CSV.File("$D/ModelDataset/secshares.csv", select=[2, 3]) |> DataFrame
     for i in 1:10
         params.Vs[i, 2] = secshares[i, 1] - 1e-15                                    # vE
         params.Vs[i, 3] = secshares[i, 2] - 1e-15                                    # vF
@@ -143,9 +143,9 @@ function create_params!(params::StructParams, z_path::String, zsector_path::Stri
     end
 
     # expenditure shares
-    #sectoralconshares = CSV.File("Data/ModelDataset/expshare.csv", select=3:12) |> Tables.matrix
+    #sectoralconshares = CSV.File("$D/ModelDataset/expshare.csv", select=3:12) |> Tables.matrix
     #params.betaS .= sectoralconshares
-    params.betaS .= CSV.File("Data/ModelDataset/expshare.csv", select=3:12) |> Tables.matrix
+    params.betaS .= CSV.File("$D/ModelDataset/expshare.csv", select=3:12) |> Tables.matrix
 
     ## programer Parameters
     params.tol = 1e-4
@@ -201,16 +201,16 @@ function create_params!(params::StructParams, z_path::String, zsector_path::Stri
 end
 
 # fill params
-function fill_params(regions::DataFrame, majorregions::DataFrame, Linecounts::DataFrame)
+function fill_params(regions::DataFrame, majorregions::DataFrame, Linecounts::DataFrame, D::String)
     z_path = "Guesses/z_mat.mat"
     zsector_path = "Guesses/z_sec_mat.mat"
-    tau_paths = ["Data/ModelDataset/tau/tau_ind1.mat", "Data/ModelDataset/tau/tau_ind2.mat",
-                "Data/ModelDataset/tau/tau_ind3.mat", "Data/ModelDataset/tau/tau_ind4.mat",
-                "Data/ModelDataset/tau/tau_ind5.mat", "Data/ModelDataset/tau/tau_ind6.mat", 
-                "Data/ModelDataset/tau/tau_ind7.mat", "Data/ModelDataset/tau/tau_ind8.mat",
-                "Data/ModelDataset/tau/tau_ind9.mat", "Data/ModelDataset/tau/tau_ind10.mat"]
+    tau_paths = ["$D/ModelDataset/tau/tau_ind1.mat", "$D/ModelDataset/tau/tau_ind2.mat",
+                "$D/ModelDataset/tau/tau_ind3.mat", "$D/ModelDataset/tau/tau_ind4.mat",
+                "$D/ModelDataset/tau/tau_ind5.mat", "$D/ModelDataset/tau/tau_ind6.mat", 
+                "$D/ModelDataset/tau/tau_ind7.mat", "$D/ModelDataset/tau/tau_ind8.mat",
+                "$D/ModelDataset/tau/tau_ind9.mat", "$D/ModelDataset/tau/tau_ind10.mat"]
     params = StructParams()
-    create_params!(params, z_path, zsector_path, tau_paths, regions, majorregions, Linecounts)
+    create_params!(params, z_path, zsector_path, tau_paths, regions, majorregions, Linecounts, D)
     return params
 end
 

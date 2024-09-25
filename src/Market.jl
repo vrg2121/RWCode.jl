@@ -19,15 +19,15 @@ import SparseArrays: sparse
 import JLD2: @save
 import DataFrames: DataFrame
 
-function solve_market(P::NamedTuple, D::NamedTuple, config::ModelConfig)
+function solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::String)
 # ---------------------------------------------------------------------------- #
 #                           Solve Market Equilibrium                           #
 # ---------------------------------------------------------------------------- #
 
 
-    mrkteq = solve_initial_equilibrium(P.params, D.wage_init, P.majorregions,
-                                        D.regionParams, D.KR_init_S, D.KR_init_W, D.R_LR, D.sectoralempshares,
-                                        P.Linecounts, P.kappa, P.regions, P.linconscount, P.updw_w, P.upw_z, D.RWParams);
+    mrkteq = solve_initial_equilibrium(P.params, DL.wage_init, P.majorregions,
+                                        DL.regionParams, DL.KR_init_S, DL.KR_init_W, DL.R_LR, DL.sectoralempshares,
+                                        P.Linecounts, P.kappa, P.regions, P.linconscount, P.updw_w, P.upw_z, DL.RWParams, G);
     println("Initial Calibration= ", mrkteq.diffend)
 
     Z = P.params.Z
@@ -45,31 +45,31 @@ function solve_market(P::NamedTuple, D::NamedTuple, config::ModelConfig)
 
 
     # Save variables
-    @save "Guesses/w_guess_mat.jld2" w_guess
-    @save "Guesses/p_E_guessmat.jld2" p_E_init
-    @save "Guesses/Dout_guess_init.jld2" result_Dout_init
-    @save "Guesses/Yout_guess_init.jld2" result_Yout_init
-    @save "Guesses/PC_guess_init.jld2" PC_guess_init
+    @save "$G/w_guess_mat.jld2" w_guess
+    @save "$G/p_E_guessmat.jld2" p_E_init
+    @save "$G/Dout_guess_init.jld2" result_Dout_init
+    @save "$G/Yout_guess_init.jld2" result_Yout_init
+    @save "$G/PC_guess_init.jld2" PC_guess_init
 
-    @save "Guesses/laboralloc_guess.jld2" laboralloc
-    @save "Guesses/z_mat.jld2" Z
-    @save "Guesses/z_sec_mat.jld2" Zsec
-    @save "Guesses/wedge_vec.jld2" wedge
-    @save "Guesses/priceshifterupdate_vec.jld2" priceshifterupdate
-    @save "Guesses/fossilsales_guess.jld2" fossilsales
+    @save "$G/laboralloc_guess.jld2" laboralloc
+    @save "$G/z_mat.jld2" Z
+    @save "$G/z_sec_mat.jld2" Zsec
+    @save "$G/wedge_vec.jld2" wedge
+    @save "$G/priceshifterupdate_vec.jld2" priceshifterupdate
+    @save "$G/fossilsales_guess.jld2" fossilsales
 
     # set initial power output vector
     P_out_init = mrkteq.P_out
 
     # set Q initial to be the solar already installed
-    Qtotal_init_S = sum(D.KR_init_S)
-    Qtotal_init_W = sum(D.KR_init_W)
+    Qtotal_init_S = sum(DL.KR_init_S)
+    Qtotal_init_W = sum(DL.KR_init_W)
     p_KR_init_S=(config.Initialprod+Qtotal_init_S).^(-P.params.gammaS);    
     p_KR_init_W=(config.Initialprod+Qtotal_init_W).^(-P.params.gammaW);
-    SShare_init=(D.regionParams.thetaS./p_KR_init_S).^P.params.varrho./((D.regionParams.thetaS./p_KR_init_S).^P.params.varrho+(D.regionParams.thetaW./p_KR_init_W).^P.params.varrho)
-    thetabar_init = D.regionParams.thetaS .* SShare_init + D.regionParams.thetaW .* (1 .- SShare_init)
+    SShare_init=(DL.regionParams.thetaS./p_KR_init_S).^P.params.varrho./((DL.regionParams.thetaS./p_KR_init_S).^P.params.varrho+(DL.regionParams.thetaW./p_KR_init_W).^P.params.varrho)
+    thetabar_init = DL.regionParams.thetaS .* SShare_init + DL.regionParams.thetaW .* (1 .- SShare_init)
     p_KR_bar_init = SShare_init .* p_KR_init_S + (1 .- SShare_init) .* p_KR_init_W
-    pE_FE_init=(p_KR_bar_init-p_KR_bar_init*(1-P.params.deltaR)./D.R_LR).*D.regionParams.costshifter./thetabar_init
+    pE_FE_init=(p_KR_bar_init-p_KR_bar_init*(1-P.params.deltaR)./DL.R_LR).*DL.regionParams.costshifter./thetabar_init
 
     wageresults = Matrix{Float64}(undef, 2531, 2)
     priceresults = Vector{Float64}(undef, 2531)
@@ -87,7 +87,7 @@ function solve_market(P::NamedTuple, D::NamedTuple, config::ModelConfig)
     renewshareEU=1-(sum(mrkteq.YF_init[P.majorregions.rowid[1]+1:P.majorregions.rowid[2]]))./sum(mrkteq.YE_init[P.majorregions.rowid[1]+1:P.majorregions.rowid[2]])
 
     p_F_int=copy(mrkteq.p_F)
-    KF_init=copy(D.regionParams.KF)
+    KF_init=copy(DL.regionParams.KF)
 
     return (
         wageresults = wageresults,

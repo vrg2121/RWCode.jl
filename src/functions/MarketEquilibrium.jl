@@ -3,9 +3,7 @@
 
 module MarketEquilibrium
 export hessinterior, obj, mycon, obj2, Price_Solve, wage_update_ms, grad_f
-#import DataFrames
-#import Statistics
-#import LinearAlgebra
+
 import Main.ParamsFunctions: StructParams
 
 

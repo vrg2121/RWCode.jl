@@ -4,7 +4,7 @@ using Printf
 using CSV
 using DataFrames
 
-function writedata_exog(TE::NamedTuple, exogindex::Int)
+function writedata_exog(TE::NamedTuple, exogindex::Int, R::String)
     # Constructing a label string
     labeller = "exog" * @sprintf("%02d", exogindex)
 
@@ -20,7 +20,7 @@ function writedata_exog(TE::NamedTuple, exogindex::Int)
         100 .* TE.renewshare_path_world[:, 1:30]'
     )
 
-    writedlm("./Results/Renewable_share$(labeller).csv", sharepath, ",")
+    writedlm("$R/Renewable_share$(labeller).csv", sharepath, ",")
 
     
 end

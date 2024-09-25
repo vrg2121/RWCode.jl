@@ -60,50 +60,50 @@ function elec_fuel_expenditure!(laboralloc::Matrix, D_init::Vector, params::Stru
     return fossilsales, Expenditure_init
 end
 
-function open_mat_var!(result_Dout_init::Matrix{Matrix{Float64}}, result_Yout_init::Matrix{Matrix{Float64}}, result_Pout_init::Matrix{Matrix{Float64}})
+function open_mat_var!(result_Dout_init::Matrix{Matrix{Float64}}, result_Yout_init::Matrix{Matrix{Float64}}, result_Pout_init::Matrix{Matrix{Float64}}, G::String)
     # opening variables in mat files
-    wf = matopen("Guesses/w_guess_mat.mat")
+    wf = matopen("$G/w_guess_mat.mat")
     w_guess = read(wf, "w_guess")
     close(wf)
 
-    pEf = matopen("Guesses/p_E_guessmat.mat") 
+    pEf = matopen("$G/p_E_guessmat.mat") 
     p_E_init = read(pEf, "p_E_init")
     close(pEf)
     p_E_init = vec(p_E_init)
 
-    pof = matopen("Guesses/Pout_guess_init.mat")
+    pof = matopen("$G/Pout_guess_init.mat")
     result_Pout_init .= read(pof, "result_Pout_init")
     close(pof)
 
-    lf = matopen("Guesses/laboralloc_guess.mat")
+    lf = matopen("$G/laboralloc_guess.mat")
     laboralloc = read(lf, "laboralloc")
     close(lf)
 
-    PCf = matopen("Guesses/PC_guess_init.mat")
+    PCf = matopen("$G/PC_guess_init.mat")
     PC_guess_init = read(PCf, "PC_guess_init")
     close(PCf)
 
-    dof = matopen("Guesses/Dout_guess_init.mat")
+    dof = matopen("$G/Dout_guess_init.mat")
     result_Dout_init .= read(dof, "result_Dout_init")
     close(dof)
 
-    yof = matopen("Guesses/Yout_guess_init.mat")
+    yof = matopen("$G/Yout_guess_init.mat")
     result_Yout_init .= read(yof, "result_Yout_init")
     close(yof)
 
-    pff = matopen("Guesses/p_F_path_guess_saved.mat")
+    pff = matopen("$G/p_F_path_guess_saved.mat")
     p_F_path_guess = read(pff, "p_F_path_guess")
     close(pff)
 
-    wf = matopen("Guesses/wedge_vec.mat")
+    wf = matopen("$G/wedge_vec.mat")
     wedge = read(wf, "wedge")
     close(wf)
 
-    psf = matopen("Guesses/priceshifterupdate_vec.mat")
+    psf = matopen("$G/priceshifterupdate_vec.mat")
     priceshifterupdate = read(psf, "priceshifterupdate")
     close(psf)
 
-    ff = matopen("Guesses/fossilsales_guess.mat")
+    ff = matopen("$G/fossilsales_guess.mat")
     fossilsales = read(ff, "fossilsales")
     close(ff)
 
@@ -255,7 +255,7 @@ end
 
 function solve_initial_equilibrium(params::StructParams, wage_init::Union{Matrix, Vector{Float64}}, majorregions::DataFrame,
     regionParams::StructRWParams, KR_init_S::Matrix{Float64}, KR_init_W::Matrix{Float64}, R_LR::Float64, sectoralempshares::Matrix{Union{Float64, Missing}},
-    Linecounts::DataFrame, kappa::Int, regions::DataFrame, linconscount::Int, updw_w::Float64, upw_z::Float64, RWParams::StructRWParams)
+    Linecounts::DataFrame, kappa::Int, regions::DataFrame, linconscount::Int, updw_w::Float64, upw_z::Float64, RWParams::StructRWParams, G::String)
     
     # allocations for variables
     sizes = [727, 755, 30, 53, 13, 15, 46, 11, 26, 78, 125, 320, 332]
@@ -282,7 +282,7 @@ function solve_initial_equilibrium(params::StructParams, wage_init::Union{Matrix
 
     # load variable guesses
     w_guess, p_E_init, laboralloc, PC_guess_init, p_F_path_guess, 
-    wedge, priceshifterupdate, fossilsales = open_mat_var!(result_Dout_init, result_Yout_init, result_Pout_init)
+    wedge, priceshifterupdate, fossilsales = open_mat_var!(result_Dout_init, result_Yout_init, result_Pout_init, G)
 
 
     # initial fossil sales guess

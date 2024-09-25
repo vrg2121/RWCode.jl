@@ -8,7 +8,7 @@ import Main.ModelConfiguration: ModelConfig
 export solve_steadystate_exog
 
 
-function solve_steadystate_exog(P, D, M, config, exogindex)
+function solve_steadystate_exog(P::NamedTuple, DL::NamedTuple, M::NamedTuple, config::ModelConfig, exogindex::Int64, G::String)
     # ---------------------------------------------------------------------------- #
     #                             Step 0: Initial Guess                            #
     # ---------------------------------------------------------------------------- #
@@ -17,10 +17,10 @@ function solve_steadystate_exog(P, D, M, config, exogindex)
     # ------------------ Solve Power Output within given capital ----------------- #
     
 
-    sseqE = solve_power_output_exog(D.RWParams, P.params, config.RunBatteries,
-                config.Initialprod, D.R_LR, P.majorregions, P.Linecounts, P.linconscount,
-                D.regionParams, pB_shifter, P.T, M.mrkteq, D.projectionssolar, D.projectionswind, 
-                config, exogindex, M.p_KR_init_S, M.p_KR_init_W, P.kappa);
+    sseqE = solve_power_output_exog(DL.RWParams, P.params, config.RunBatteries,
+                config.Initialprod, DL.R_LR, P.majorregions, P.Linecounts, P.linconscount,
+                DL.regionParams, pB_shifter, P.T, M.mrkteq, DL.projectionssolar, DL.projectionswind, 
+                config, exogindex, M.p_KR_init_S, M.p_KR_init_W, P.kappa, G);
 
     println("Steady State diffK= ", sseqE.diffK)
 
@@ -44,12 +44,12 @@ function solve_steadystate_exog(P, D, M, config, exogindex)
     priceresults_LR = sseqE.p_E_LR
 
     # Get changes in welfare from the different components
-    welfare_wagechange = (log.(sseqE.w_LR ./ sseqE.PC_guess_LR) .- log.(D.wage_init ./ M.mrkteq.PC_guess_init)) .* (D.wage_init .* P.params.L ./ M.mrkteq.Expenditure_init)
+    welfare_wagechange = (log.(sseqE.w_LR ./ sseqE.PC_guess_LR) .- log.(DL.wage_init ./ M.mrkteq.PC_guess_init)) .* (DL.wage_init .* P.params.L ./ M.mrkteq.Expenditure_init)
     welfare_capitalchange = (log.(sseqE.KP_LR ./ sseqE.PC_guess_LR) .- log.(M.mrkteq.KP_init ./ M.mrkteq.PC_guess_init)) .* (M.mrkteq.rP_init .* M.mrkteq.KP_init ./ M.mrkteq.Expenditure_init)
 
-    welfare_electricitychange = (log.((D.R_LR .* sseqE.KR_LR .* sseqE.p_KR_bar_LR .* sseqE.PC_LR + D.R_LR .* sseqE.KF_LR .* sseqE.PC_LR) ./ sseqE.PC_LR) .- 
-        log.((D.R_LR .* (D.KR_init_W + D.KR_init_S) .* M.p_KR_bar_init .* M.mrkteq.PC_init + D.R_LR .* M.KF_init .* M.mrkteq.PC_init))) .* 
-        ((1 - P.params.beta) * (D.R_LR .* (D.KR_init_W + D.KR_init_S) .* M.p_KR_bar_init .* M.mrkteq.PC_init + D.R_LR .* M.KF_init .* M.mrkteq.PC_init) ./ M.mrkteq.Expenditure_init)
+    welfare_electricitychange = (log.((DL.R_LR .* sseqE.KR_LR .* sseqE.p_KR_bar_LR .* sseqE.PC_LR + DL.R_LR .* sseqE.KF_LR .* sseqE.PC_LR) ./ sseqE.PC_LR) .- 
+        log.((DL.R_LR .* (DL.KR_init_W + DL.KR_init_S) .* M.p_KR_bar_init .* M.mrkteq.PC_init + DL.R_LR .* M.KF_init .* M.mrkteq.PC_init))) .* 
+        ((1 - P.params.beta) * (DL.R_LR .* (DL.KR_init_W + DL.KR_init_S) .* M.p_KR_bar_init .* M.mrkteq.PC_init + DL.R_LR .* M.KF_init .* M.mrkteq.PC_init) ./ M.mrkteq.Expenditure_init)
 
     welfare_fossilchange = -M.mrkteq.fossilsales ./ M.mrkteq.Expenditure_init
 
