@@ -6,7 +6,7 @@ export setup_parameters
 # VARIABLES INITIATED, NOT USED FOR EXPORT: updps, updw_alpha, upw_zmax, updw_l, updw_D, updw_k
 
 # import functions
-using Main.ParamsFunctions
+using ..ParamsFunctions
 
 function setup_parameters(D::String)
     # preallocate parameters
