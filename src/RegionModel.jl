@@ -145,7 +145,7 @@ function data_set_up_exog(kk::Int, majorregions::DataFrame, Linecounts::DataFram
                     params.zsector[ind, :] .*
                     Lshifter .^ (params.Vs[:,1]'.* ones(n, 1)) .* 
                     Kshifter .^ (params.Vs[:,4]'.* ones(n, 1))
-    local shifter=shifter.*secalloc.^power
+    local shifter = shifter.*secalloc.^power
 
     local @views KRshifter = @. regionParams.thetaS[ind] * KR_S[ind] + 
                             regionParams.thetaW[ind] * KR_W[ind]
@@ -219,16 +219,6 @@ function solve_model(kk::Int, l_guess::Int, LB::Vector, UB::Vector, guess::Union
     return value.(model[:x])
 end
 
-function solve_model_test(kk::Int, l_guess::Int, LB::Vector, UB::Vector, guess::Union{Vector, Matrix}, regionParams, params::StructParams, power::Matrix, 
-    shifter::Matrix, KFshifter::Union{SubArray, Vector}, KRshifter::Vector, p_F::Union{Float64, Vector, Int}, mid::Int, power2::Float64)
-    local model = Model(Ipopt.Optimizer)
-    set_silent(model)
-    add_model_variable(model, LB, l_guess, UB, guess)
-    add_model_constraint(model, regionParams, params, kk, mid)
-    add_model_objective_test(model, power, shifter, KFshifter, KRshifter, p_F, params, mid, power2)
-    optimize!(model)
-    return value.(model[:x])
-end
 
 
 end

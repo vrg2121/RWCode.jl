@@ -1,0 +1,8 @@
+# ././dockerignore
+
+README.md
+LICENSE
+.dockerignore
+test/
+notes/
+Manifest.toml

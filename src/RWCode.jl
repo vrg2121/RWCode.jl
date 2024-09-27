@@ -51,7 +51,7 @@ run_rwcode(config, D, G, R)
 """
 
 
-module RWCodeJulia
+module RWCode
 
 export ModelConfig, run_rwcode
 
@@ -61,12 +61,11 @@ export ModelConfig, run_rwcode
 
 include("./ModelConfiguration.jl")
 import .ModelConfiguration: ModelConfig
-println("Set model configurations by creating struct using ModelConfig(). For example: config = ModelConfig()")
-#println("Create path to folder to store results.")
+# Set model configurations by creating struct using ModelConfig(). For example:
+## config = ModelConfig()
 
 ######################################################
 # create path to Results folder
-
 # R = "C:/Users/vrg2121/.julia/dev/RWCodeJulia/Results"
 
 ######################################################
@@ -234,8 +233,9 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
     if config.RunExog == 1
         config.hoursofstorage = 0
         for exogindex in 3:-1:1
+            exogindex = 1
             println("Solving long run equilibrium with exogenous tech when exog index = $exogindex...")
-            SE = solve_steadystate_exog(P, DL, M, config, exogindex, G)
+            SE = SteadyStateExog.solve_steadystate_exog(P, DL, M, config, exogindex, G)
 
             println("Solving transitional dynamics with exogenous tech when exog index = $exogindex...")
             TE = solve_transition_exog(P, DL, M, SE, config, exogindex)

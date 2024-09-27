@@ -5,7 +5,7 @@ import MAT: matopen
 import Statistics: mean
 import Main.DataLoadsFunc: StructGsupply, StructRWParams
 import Main.ParamsFunctions: StructParams
-using JuMP, Ipopt
+using JuMP, Ipopt, JLD2
 using Main.RegionModel, Main.MarketEquilibrium
 
 import Main.ModelConfiguration: ModelConfig
@@ -31,7 +31,7 @@ function ss_optimize_region!(result_price_LR::Vector, result_Dout_LR::Matrix, re
         result_price_LR[kk] .= Price_Solve(P_out, shifter, n, params)
         @views result_Dout_LR[kk] .= P_out[1:end÷2]
         @views result_Yout_LR[kk] .= P_out[end÷2+1:end]
-        result_YFout_LR[kk] .= abs.(P_out[end÷2+1:end] .- KRshifter)
+        result_YFout_LR[kk] .= (P_out[end÷2+1:end] .- KRshifter)
         local Pvec = P_out[end÷2+1:end] .- P_out[1:end÷2]
         local Losses = Pvec[2:end]' * regionParams.B[kk] * Pvec[2:end] .* params.Rweight
         @views Lossfac_LR[1, kk] = Losses / sum(result_Yout_init[kk])
@@ -51,8 +51,7 @@ function ss_second_loop(majorregions::DataFrame, Lsector::Matrix, laboralloc::Ma
     @views secalloc = laboralloc[ind, :]
     @views Lshifter = Lsector[ind, :]
     @views Kshifter .= Lsector[ind, :] .* (params.Vs[:,4]'.* ones(majorregions.n[kk], 1)) ./
-    ((params.Vs[:,1]'.* ones(majorregions.n[kk], 1))) .* (w_LR[ind] ./
-    rP_LR[ind])
+            ((params.Vs[:,1]'.* ones(majorregions.n[kk], 1))) .* (w_LR[ind] ./ rP_LR[ind])
     @views Ltotal = sum(Lshifter, dims=2)
     Jlength = majorregions.n[kk]
     @views guess = [result_Dout_LR[kk]; result_Yout_LR[kk]]
@@ -63,17 +62,17 @@ function ss_second_loop(majorregions::DataFrame, Lsector::Matrix, laboralloc::Ma
     @views power = ((params.Vs[:,2]'.* ones(Jlength, 1)) + (params.Vs[:,3]'.* ones(Jlength, 1)))
 
     @views shifter = pg_s .* (kappa .+ (prices ./ (kappa .* p_F_LR)).^(params.psi - 1)).^(params.psi / (params.psi - 1) .* 
-    (params.Vs[:,3]'.* ones(majorregions.n[kk], 1))) .*
-    (1 .+ (params.Vs[:,3]'.* ones(majorregions.n[kk], 1)) ./ (params.Vs[:,2]'.* ones(majorregions.n[kk], 1))) .^
-    (-(params.Vs[:,2]'.* ones(majorregions.n[kk], 1)) - (params.Vs[:,2]'.* ones(majorregions.n[kk], 1))) .*
-    params.Z[majorregions.rowid2[kk]:majorregions.rowid[kk]] .*
-    params.zsector[majorregions.rowid2[kk]:majorregions.rowid[kk], :] .*
-    Lshifter.^(params.Vs[:,1]'.* ones(majorregions.n[kk], 1)) .*
-    Kshifter .^ (params.Vs[:,4]'.* ones(majorregions.n[kk], 1))
+            (params.Vs[:,3]'.* ones(majorregions.n[kk], 1))) .*
+            (1 .+ (params.Vs[:,3]'.* ones(majorregions.n[kk], 1)) ./ (params.Vs[:,2]'.* ones(majorregions.n[kk], 1))) .^
+            (-(params.Vs[:,2]'.* ones(majorregions.n[kk], 1)) - (params.Vs[:,2]'.* ones(majorregions.n[kk], 1))) .*
+            params.Z[majorregions.rowid2[kk]:majorregions.rowid[kk]] .*
+            params.zsector[majorregions.rowid2[kk]:majorregions.rowid[kk], :] .*
+            Lshifter.^(params.Vs[:,1]'.* ones(majorregions.n[kk], 1)) .*
+            Kshifter .^ (params.Vs[:,4]'.* ones(majorregions.n[kk], 1))
 
     shifter .= shifter .* secalloc .^ power
     @views KRshifter = regionParams.thetaS[ind] .* KR_LR_S[ind] .+
-    regionParams.thetaW[ind] .* KR_LR_W[ind]
+                regionParams.thetaW[ind] .* KR_LR_W[ind]
     @views KFshifter = KF_LR[ind]
     # define bounds
     @views YFmax = KF_LR[ind]
@@ -160,8 +159,8 @@ function set_battery(KR_LR::Matrix, hoursofstorage::Int64, params::StructParams,
     Depreciation_B = B_LR .* params.deltaB
     cumsum = sum(Depreciation_B)
     cumsum = cumsum .* (params.iota).^(1:500)
-    Qtotal_LR_B = sum(cumsum)
-    p_B = (Initialprod .* (params.iota) .^ (T) + Qtotal_LR_B) .^ (-params.gammaB)
+    Btotal_LR = sum(cumsum)
+    p_B = (Initialprod .* (params.iota) .^ (T) + Btotal_LR) .^ (-params.gammaB)
     return p_B
 end
 
@@ -170,8 +169,8 @@ function update_battery(KR_LR::Matrix, hoursofstorage::Int64, params::StructPara
     Depreciation_B = B_LR .* params.deltaB
     cumsum = sum(Depreciation_B)
     cumsum = cumsum .* (params.iota .^ (1:500))
-    Qtotal_LR_B = sum(cumsum)
-    p_B = (0.001 .+ Qtotal_LR_B) .^ (-params.gammaB) # Shift avoids NAN when 0 investment
+    Btotal_LR = sum(cumsum)
+    p_B = (0.001 .+ Btotal_LR) .^ (-params.gammaB) # Shift avoids NAN when 0 investment
     return p_B
 end
 
@@ -181,7 +180,16 @@ function solve_power_output_exog(RWParams::StructRWParams, params::StructParams,
     projectionssolar::Matrix, projectionswind::Matrix, config::ModelConfig, exogindex::Int, 
     p_KR_init_S::Float64, p_KR_init_W::Float64, kappa::Int, G::String)
 
-    laboralloc_LR, KR_LR_S, KR_LR_W, p_E_LR, w_LR, result_Dout_LR, result_Yout_LR, PC_guess_LR = ss_load_mat(G);
+    #laboralloc_LR, KR_LR_S, KR_LR_W, p_E_LR, w_LR, result_Dout_LR, result_Yout_LR, PC_guess_LR = ss_load_mat(G);
+    laboralloc_LR = load("$G/laboralloc_LR_guess.jld2")["laboralloc_LR"]
+    KR_LR_S = load("$G/KR_LR_S_guess.jld2")["KR_LR_S"]
+    KR_LR_W = load("$G/KR_LR_W_guess.jld2")["KR_LR_W"]
+    p_E_LR = load("$G/p_E_LR_guess.jld2")["p_E_LR"]
+    w_LR = load("$G/w_LR_guess.jld2")["w_LR"]
+    result_Dout_LR = load("$G/Dout_guess_LR.jld2")["result_Dout_LR"]
+    result_Yout_LR = load("$G/Yout_guess_LR.jld2")["result_Yout_LR"]
+    PC_guess_LR = load("$G/PC_guess_LR.jld2")["PC_guess_LR"]
+
 
     global laboralloc_LR
     global KR_LR_S
@@ -203,8 +211,8 @@ function solve_power_output_exog(RWParams::StructRWParams, params::StructParams,
     ####
 
     # get guess for long run renewable capital prices
-    p_KR_LR_S=p_KR_init_S * projectionssolar[end, exogindex+1]
-    p_KR_LR_W=p_KR_init_W .* projectionswind[end, exogindex+1]
+    p_KR_LR_S = p_KR_init_S * projectionssolar[end, exogindex+1]
+    p_KR_LR_W = p_KR_init_W .* projectionswind[end, exogindex+1]
 
     Capinvest = ones(params.J, 1)
 
@@ -245,7 +253,7 @@ function solve_power_output_exog(RWParams::StructRWParams, params::StructParams,
     rP_LR = Vector{Float64}(undef, 2531)
 
 
-    rP_LR .= (R_LR - 1 + params.deltaP).*PC_guess_LR
+    rP_LR .= (R_LR - 1 + params.deltaP) .* PC_guess_LR
 
     while diffK > 10^(-2)
         println("Number of iterations outer while loop: ", niters)
@@ -255,7 +263,6 @@ function solve_power_output_exog(RWParams::StructRWParams, params::StructParams,
 
         #while diffend > tol
         println("Number of iterations inner while loop: ", niters_in)
-
 
         # set long run goods prices 
         pg_LR_s = w_LR .^ (params.Vs[:, 1]' .* ones(params.J, 1)) .* 
@@ -323,9 +330,8 @@ function solve_power_output_exog(RWParams::StructRWParams, params::StructParams,
                 YE_LR[ind] = result_Yout_LR[kk]
                 YF_LR[ind] .= sub
                 PI_LR[ind] .= sum(result_price_LR[kk][1] .* (result_Dout_LR[kk].-result_Yout_LR[kk])) .*
-                                                                                params.L[ind, 1] ./
-                                                                                sum(params.L[ind, 1])
-                PI_LR[ind] .= clamp.(PI_LR[ind], 0.0, 0.00001)
+                                params.L[ind, 1] ./ sum(params.L[ind, 1])
+                #PI_LR[ind] .= clamp.(PI_LR[ind], 0.0, 0.00001)
             end    
         end
 
