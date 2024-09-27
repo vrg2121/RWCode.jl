@@ -2,7 +2,7 @@ module WriteData
 
 # import package 
 import DelimitedFiles: writedlm
-import Main.ModelConfiguration: ModelConfig
+import ..ModelConfiguration: ModelConfig
 
 export writedata
 

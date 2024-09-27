@@ -1,7 +1,7 @@
 module TransitionExog
 
 # load functions
-using Main.DataAdjustments, Main.TransitionExogFunc, Main.MarketEquilibrium
+using ..DataAdjustments, ..TransitionExogFunc, ..MarketEquilibrium
 
 # load packages
 using Ipopt, JuMP, Interpolations
@@ -10,7 +10,7 @@ import Plots: plot, plot!
 import DataFrames: DataFrame
 import JLD2: @save
 import SparseArrays: sparse
-import Main.ModelConfiguration: ModelConfig
+import ..ModelConfiguration: ModelConfig
 
 export solve_transition_exog
 

@@ -4,7 +4,7 @@ module DataLoads
 export load_data
 
 # load functions
-using Main.DataLoadsFunc, Main.DataAdjustments
+using ..DataLoadsFunc, ..DataAdjustments
 
 # load functions from packages
 import CSV: CSV

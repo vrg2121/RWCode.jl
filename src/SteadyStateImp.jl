@@ -1,10 +1,10 @@
 module SteadyStateImp
-import Main.SteadyState: p_E_LR
-import Main.DataLoads: regionParams
+import ..SteadyState: p_E_LR
+import ..DataLoads: regionParams
 
 using CSV, DataFrames, LinearAlgebra
-import Main.DataLoadsFunc: Matshifter
-import Main.Params: majorregions, regions
+import ..DataLoadsFunc: Matshifter
+import ..Params: majorregions, regions
 
 
 function solve_steadystate_imp(P, D, M, S, config)

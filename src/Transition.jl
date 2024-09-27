@@ -1,7 +1,7 @@
 module Transition
 
 # load functions
-using Main.DataAdjustments, Main.TransitionFunctions, Main.MarketEquilibrium
+using ..DataAdjustments, ..TransitionFunctions, ..MarketEquilibrium
 
 # load packages
 using Ipopt, JuMP, Interpolations
@@ -11,7 +11,7 @@ import DataFrames: DataFrame
 import JLD2: @save
 import SparseArrays: sparse
 
-import Main.ModelConfiguration: ModelConfig
+import ..ModelConfiguration: ModelConfig
 
 # import parameters, data and variables
 

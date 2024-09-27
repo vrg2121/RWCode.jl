@@ -3,12 +3,12 @@ module SteadyStateFunctions
 import DataFrames: DataFrame
 import MAT: matopen
 import Statistics: mean
-import Main.DataLoadsFunc: StructGsupply, StructRWParams
-import Main.ParamsFunctions: StructParams
+import ..DataLoadsFunc: StructGsupply, StructRWParams
+import ..ParamsFunctions: StructParams
 using JuMP, Ipopt
-using Main.RegionModel, Main.MarketEquilibrium
+using ..RegionModel, ..MarketEquilibrium
 
-import Main.ModelConfiguration: ModelConfig
+import ..ModelConfiguration: ModelConfig
 export ss_second_loop, grad_f, new_obj2, new_grad2, ss_load_mat, ss_update_params!, 
        new_obj_f, new_grad_f, set_battery, update_battery, ss_optimize_region!, solve_power_output, ss_optimize_region_imp!
 

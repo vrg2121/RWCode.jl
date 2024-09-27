@@ -5,11 +5,11 @@ module Market
 export solve_market
 
 # load functions
-using Main.DataAdjustments
-using Main.MarketFunctions
-using Main.MarketEquilibrium
-using Main.RegionModel
-import Main.ModelConfiguration: ModelConfig
+using ..DataAdjustments
+using ..MarketFunctions
+using ..MarketEquilibrium
+using ..RegionModel
+import ..ModelConfiguration: ModelConfig
 
 # load packages
 using JuMP, Ipopt

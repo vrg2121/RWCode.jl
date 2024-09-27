@@ -1,7 +1,7 @@
 module TransitionSub
 
 # load functions
-using Main.DataAdjustments, Main.TransitionFunctions, Main.MarketEquilibrium
+using ..DataAdjustments, ..TransitionFunctions, ..MarketEquilibrium
 
 # load packages
 using Ipopt, JuMP, Interpolations
@@ -12,13 +12,13 @@ import JLD2: @save
 import SparseArrays: sparse
 
 # import parameters, data and variables
-import Main.Params: params, regions, majorregions, T, Linecounts, linconscount, kappa, curtailmentswitch, decayp, hoursofstorage, pB_shifter, g
-import Main.ParameterizeRun: Transiter, Initialprod, st
-import Main.DataLoads: RWParams, regionParams, GsupplyCurves, R_LR, wage_init, KR_init_S, KR_init_W
-import Main.Market: p_KR_bar_init, laboralloc_init, p_KR_init_S, p_KR_init_W, p_F_int, mrkteq, subsidy_US
-import Main.SteadyState: sseq, interp3
-import Main.DataLoadsFunc: StructGsupply, StructRWParams
-import Main.ParamsFunctions: StructParams
+import ..Params: params, regions, majorregions, T, Linecounts, linconscount, kappa, curtailmentswitch, decayp, hoursofstorage, pB_shifter, g
+import ..ParameterizeRun: Transiter, Initialprod, st
+import ..DataLoads: RWParams, regionParams, GsupplyCurves, R_LR, wage_init, KR_init_S, KR_init_W
+import ..Market: p_KR_bar_init, laboralloc_init, p_KR_init_S, p_KR_init_W, p_F_int, mrkteq, subsidy_US
+import ..SteadyState: sseq, interp3
+import ..DataLoadsFunc: StructGsupply, StructRWParams
+import ..ParamsFunctions: StructParams
 
 export transeq, renewshare_path_region, renewshare_path_world, renewshareUS, welfare_wagechange_2040, welfare_capitalchange_2040, 
 welfare_electricitychange_2040, welfare_fossilchange_2040, YUS_rel

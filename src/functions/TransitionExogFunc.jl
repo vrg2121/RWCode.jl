@@ -5,13 +5,13 @@ using JuMP, Ipopt, Interpolations
 import LinearAlgebra: Transpose, I, Adjoint
 import Random: Random
 import SparseArrays: sparse
-import Main.RegionModel: solve_model
-import Main.DataLoadsFunc: StructGsupply, StructRWParams
-import Main.ParamsFunctions: StructParams
-import Main.ModelConfiguration: ModelConfig
+import ..RegionModel: solve_model
+import ..DataLoadsFunc: StructGsupply, StructRWParams
+import ..ParamsFunctions: StructParams
+import ..ModelConfiguration: ModelConfig
 using Ipopt, JuMP
 
-using Main.MarketEquilibrium
+using ..MarketEquilibrium
 
 export solve_transitioneq_exog
 

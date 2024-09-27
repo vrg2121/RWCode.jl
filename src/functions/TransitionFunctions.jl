@@ -5,12 +5,12 @@ using JuMP, Ipopt, Interpolations
 import LinearAlgebra: Transpose, I, Adjoint
 import Random: Random
 import SparseArrays: sparse
-import Main.RegionModel: solve_model
-import Main.DataLoadsFunc: StructGsupply, StructRWParams
-import Main.ParamsFunctions: StructParams
+import ..RegionModel: solve_model
+import ..DataLoadsFunc: StructGsupply, StructRWParams
+import ..ParamsFunctions: StructParams
 using Ipopt, JuMP
 
-using Main.MarketEquilibrium
+using ..MarketEquilibrium
 
 export sectoral_allocations!, update_capital_price!, update_battery_prices!, transition_electricity_US_Europe!, transition_electricity_other_countries!,
         transition_electricity_off_grid!, fill_paths!, smooth_prices!, update_fossil_market!, solve_transition_eq

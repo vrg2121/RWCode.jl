@@ -1,7 +1,7 @@
 module SteadyState
 
 # load functions
-using Main.SteadyStateFunctions, Main.DataAdjustments, Main.MarketEquilibrium
+using ..SteadyStateFunctions, ..DataAdjustments, ..MarketEquilibrium
  
 #import MAT
 import JLD2: @save
@@ -9,7 +9,7 @@ import Plots: scatter
 import Interpolations: interpolate, Gridded, Linear
 
 # import parameters, data and variables
-import Main.ModelConfiguration: ModelConfig
+import ..ModelConfiguration: ModelConfig
 
 # export variables
 export solve_steadystate

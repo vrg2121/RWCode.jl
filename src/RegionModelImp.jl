@@ -7,10 +7,10 @@ import DataFrames: DataFrame
 import Random: Random
 import LinearAlgebra: I
 import SparseArrays: sparse
-import Main.DataLoadsFunc: StructRWParams
-import Main.ParamsFunctions: StructParams
+import ..DataLoadsFunc: StructRWParams
+import ..ParamsFunctions: StructParams
 
-using Main.MarketEquilibrium
+using ..MarketEquilibrium
 
 function data_set_up_imp(kk::Int, majorregions::DataFrame, Linecounts::DataFrame, laboralloc::Matrix, Lsector::Matrix, params,
     wage::Union{Matrix, Vector}, rP::Vector, pg_n_s::Matrix, pE::Union{Vector, Matrix}, kappa::Int, regionParams, KF::Matrix, p_F::Union{Int64, Float64}, 

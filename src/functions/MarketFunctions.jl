@@ -2,11 +2,11 @@ module MarketFunctions
 export calc_subsidyUS, calc_expenditure!, elec_fuel_expenditure!, open_mat_var!,
         market_setup!, second_loop, solve_KP_init!, optimize_region!, optimize_region_test!, solve_initial_equilibrium
 using DataFrames, Statistics, MAT
-using Main.RegionModel, Main.MarketEquilibrium
+using ..RegionModel, ..MarketEquilibrium
 using JuMP, Ipopt
 
-import Main.DataLoadsFunc: StructRWParams
-import Main.ParamsFunctions: StructParams
+import ..DataLoadsFunc: StructRWParams
+import ..ParamsFunctions: StructParams
 
 
 function calc_subsidyUS(p_E_init::Vector, regions::DataFrame, majorregions::DataFrame)

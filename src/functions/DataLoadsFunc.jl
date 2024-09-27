@@ -8,7 +8,7 @@ import Tables: Tables
 
 
 # load functions
-using Main.DataAdjustments
+using ..DataAdjustments
 
 
 export load_csv_data, w_i!, create_RWParams!, fill_RWParams, sec_shares!,

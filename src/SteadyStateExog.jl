@@ -1,8 +1,8 @@
 module SteadyStateExog
-using Main.SteadyStateExogFunc, Main.DataAdjustments, Main.MarketEquilibrium
+using ..SteadyStateExogFunc, ..DataAdjustments, ..MarketEquilibrium
 
 # import parameters, data and variables
-import Main.ModelConfiguration: ModelConfig
+import ..ModelConfiguration: ModelConfig
 
 # export variables
 export solve_steadystate_exog

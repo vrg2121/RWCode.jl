@@ -2,7 +2,7 @@ module WriteDataBattery
 
 # import package 
 import DelimitedFiles: writedlm
-import Main.ModelConfiguration: ModelConfig
+import ..ModelConfiguration: ModelConfig
 
 # import data from model
 export writedata_battery
