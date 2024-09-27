@@ -117,10 +117,11 @@ function load_csv_data(D::String)
 end
 
 # initiate functions to calculate variables
-function w_i!(wage_init::Vector, regions::DataFrame)
+function w_i!(wage_init::Vector{Float64}, regions::DataFrame)
     wage_init .= regions.wages ./ (regions.wages[1])
-    coalesce(wage_init, 1.0)
-    wage_init[wage_init .> 2] .= 2.0
+    coalesce.(wage_init, 1.0)
+    clamp!(wage_init, -Inf, 2.0)
+    #wage_init[wage_init .> 2] .= 2.0
     return wage_init
 end
 
@@ -240,7 +241,7 @@ function fill_RWParams(majorregions_all::DataFrame, majorregions::DataFrame, reg
     return RWParams
 end
 
-function sec_shares!(secshares::Matrix, sectoralempshares::Matrix, D::String)
+function sec_shares!(secshares::Matrix, sectoralempshares::Matrix{Float64}, D::String)
     secshares_df = CSV.File("$D/ModelDataset/secshares.csv") |> DataFrame
     secshares .= Matrix{Float64}(secshares_df[:, 2:3])
 
@@ -343,7 +344,7 @@ function create_curtmat!(curtmatno::Matrix, curtmat4::Matrix, curtmat12::Matrix,
         curtmat12[size(curtmat12,1)-i+2, i] = curtmat12[size(curtmat12,1)-i+1, i]
     end
 
-    curtmat .= cat(curtmatno, curtmat4, curtmat12, dims = 3)
+    curtmat = cat(curtmatno, curtmat4, curtmat12, dims = 3)
     return curtmat, samplepointssolar, samplepointswind, samplepointsbat
 end
 
@@ -352,7 +353,8 @@ function battery_req!(batteryrequirements::Matrix, D::String)
     batteryrequirements[1:end-1, :] .= batteryrequirements_df[:, [1, end]]
     batteryrequirements[15, 1] = 12
     batteryrequirements[15, 2] = 100
-    batteryrequirements[:, 2] .= batteryrequirements[:, 2] ./ 100
+    broadcast!(x -> x / 100, batteryrequirements[:, 2], batteryrequirements[:, 2])
+    #batteryrequirements[:, 2] .= batteryrequirements[:, 2] ./ 100
     return batteryrequirements
 end
 

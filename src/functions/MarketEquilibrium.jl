@@ -12,7 +12,8 @@ function obj(Inputvec::Vector, power::Matrix, shifter::Matrix, KFshifter::Union{
     mid = length(Inputvec) ÷ 2
     Dvec = Inputvec[1:mid]
     Yvec = Inputvec[1+mid:end]
-    Dsec = Dvec .* ones(1, params.I)
+    #Dsec = Dvec .* ones(1, params.I)
+    Dsec = broadcast(*, Dvec, ones(1, params.I))
 
     power2 = 1 / params.alpha1
     value1 = -(Dsec .^ power) .* shifter
@@ -59,7 +60,7 @@ function location_prices!(pijs::Vector{Matrix{Float64}}, PCs::Matrix{Float64}, X
         # retrieve slices for i
         ttau = params.tau[i]
 
-        @views tpijs .= ttau .* w0 .^ params.Vs[i, 1] .* p_E_D .^ (params.Vs[i, 2] + params.Vs[i, 3]) .* 
+        @views tpijs = ttau .* w0 .^ params.Vs[i, 1] .* p_E_D .^ (params.Vs[i, 2] + params.Vs[i, 3]) .* 
         (params.kappa + (params.kappa .* p_F ./ p_E_D) .^ (1 - params.psi)) .^ (-(params.psi ./ (params.psi - 1)) .* params.Vs[i, 3]) .*
         r .^ params.Vs[i, 4] ./
         (params.Z .* params.zsector[:, i] .* params.cdc)
