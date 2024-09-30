@@ -1,15 +1,27 @@
 #./Dockerfile
 FROM julia:latest
 
-RUN useradd --create-home --shell /bin/bash jl 
+# install git and dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+ 
+# authorize SSH host
+
+RUN useradd --create-home --shell /bin/bash jl
+USER jl
+
+RUN mkdir -p /home/jl/.ssh
+
+RUN --mount=type=ssh git clone git@github.com:vrg2121/RWCodeData.git /home/jl
 
 RUN mkdir /home/jl/RWCode
 
 WORKDIR /home/jl/RWCode
 
 RUN chown -R jl:jl /home/jl/
-
-USER jl
 
 COPY . .
 
