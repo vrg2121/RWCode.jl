@@ -11,17 +11,15 @@ RUN apt-get update && \
 # authorize SSH host
 
 RUN useradd --create-home --shell /bin/bash jl
+
+
 USER jl
-
-RUN mkdir -p /home/jl/.ssh
-
-RUN --mount=type=ssh git clone git@github.com:vrg2121/RWCodeData.git /home/jl
 
 RUN mkdir /home/jl/RWCode
 
 WORKDIR /home/jl/RWCode
 
-RUN chown -R jl:jl /home/jl/
+RUN git clone https://github.com/vrg2121/RWCodeData.git
 
 COPY . .
 
