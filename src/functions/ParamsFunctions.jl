@@ -201,9 +201,9 @@ function create_params!(params::StructParams, z_path::String, zsector_path::Stri
 end
 
 # fill params
-function fill_params(regions::DataFrame, majorregions::DataFrame, Linecounts::DataFrame, D::String)
-    z_path = "Guesses/z_mat.mat"
-    zsector_path = "Guesses/z_sec_mat.mat"
+function fill_params(regions::DataFrame, majorregions::DataFrame, Linecounts::DataFrame, D::String, G::String)
+    z_path = "$G/z_mat.mat"
+    zsector_path = "$G/z_sec_mat.mat"
     tau_paths = ["$D/ModelDataset/tau/tau_ind1.mat", "$D/ModelDataset/tau/tau_ind2.mat",
                 "$D/ModelDataset/tau/tau_ind3.mat", "$D/ModelDataset/tau/tau_ind4.mat",
                 "$D/ModelDataset/tau/tau_ind5.mat", "$D/ModelDataset/tau/tau_ind6.mat", 

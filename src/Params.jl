@@ -8,7 +8,7 @@ export setup_parameters
 # import functions
 using ..ParamsFunctions
 
-function setup_parameters(D::String)
+function setup_parameters(D::String, G::String)
     # preallocate parameters
     thetaS = Vector{Float64}(undef, 2531)
     thetaW = Vector{Float64}(undef, 2531)
@@ -19,7 +19,7 @@ function setup_parameters(D::String)
 
     regions, majorregions, Linecounts = load_parameters_csv(D)
 
-    params = fill_params(regions, majorregions, Linecounts, D)
+    params = fill_params(regions, majorregions, Linecounts, D, G)
 
     # renewable potential
     capacityfactorS = 1

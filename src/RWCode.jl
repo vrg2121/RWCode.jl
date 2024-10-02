@@ -142,7 +142,7 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
     # ---------------------------------------------------------------------------- #
 
     println("Setting up parameters...")
-    P = setup_parameters(D);
+    P = setup_parameters(D, G);
 
     # ---------------------------------------------------------------------------- #
     #                                  Data Loads                                  #
