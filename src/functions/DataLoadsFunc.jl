@@ -1,13 +1,10 @@
 module DataLoadsFunc
 
-# import functions from packages
 import CSV: CSV
 import DataFrames: DataFrame
 import LinearAlgebra: Diagonal
 import Tables: Tables
 
-
-# load functions
 using ..DataAdjustments
 
 
@@ -15,10 +12,8 @@ export load_csv_data, w_i!, create_RWParams!, fill_RWParams, sec_shares!,
         create_FFsupplyCurves, fill_FFsupply, create_StructGsupply!,
         fill_Gsupply, linear_map, create_curtmat!, battery_req!
 
-# export structs for type stability when used in functions
 export StructRWParams
 
-# load functions to process data
 mutable struct StructRWParams
     Kmatrix::Matrix{Float64}
     A::Vector{Matrix{Float64}}
@@ -41,7 +36,6 @@ mutable struct StructRWParams
     z::Matrix{Float64}
     zS::Matrix{Float64}
 
-    # Inner Constructor
     function StructRWParams()
         s1 = [(1466, 726), (1432, 754), (59, 29), (114, 52), 
         (14, 12), (23, 14), (76, 45), (10, 10), 
@@ -56,7 +50,7 @@ mutable struct StructRWParams
         (25, 25), (77, 77), (124, 124), (319, 319)]
         
         new(
-        Matrix{Float64}(undef, 4382, 2531),             # KMatrix
+        Matrix{Float64}(undef, 4382, 2531),               # KMatrix
         [Matrix{Float64}(undef, size...) for size in s1], # A
         [Matrix{Float64}(undef, size...) for size in s1], # Adash
         [Matrix{Float64}(undef, size...) for size in s2], # O
@@ -86,7 +80,6 @@ struct StructFFsupplyCurves
 
     function StructFFsupplyCurves()
         new(
-            # initiate P and Q with zeroes
             zeros(Float64, 15204, 16), 
             zeros(Float64, 15204, 16)
         )
@@ -116,7 +109,6 @@ function load_csv_data(D::String)
     return regions_all, Linedata, majorregions_all, Fossilcapital, Renewablecapital, Electricityregionprices
 end
 
-# initiate functions to calculate variables
 function w_i!(wage_init::Vector{Float64}, regions::DataFrame)
     wage_init .= regions.wages ./ (regions.wages[1])
     coalesce.(wage_init, 1.0)
@@ -127,21 +119,18 @@ end
 
 function create_RWParams!(RWParams::StructRWParams, majorregions_all::DataFrame, majorregions::DataFrame, regions::DataFrame, Linedata::DataFrame, params, wage_init::Vector{Float64},
     thetaS::Vector{Float64}, thetaW::Vector{Float64}, popelas::Float64, rP_LR, D::String)
-    # create kmatrix
+
     Kmatrix = Matrix(CSV.File("$D/ModelDataset/Kmatrix.csv", drop=[1]) |> DataFrame)
     RWParams.Kmatrix .= Matshifter(Kmatrix)
 
-    # create A
     Kmx = Matrix(CSV.File("$D/ModelDataset/Kmatrix_1.csv") |> DataFrame)[:, 2:majorregions_all.rowid[1]]
     RWParams.A[1] .= Matshifter(Kmx)
     RWParams.Adash[1] .= Matshifter(Kmx)
 
-    # create Omatrix
     Omatrix = CSV.File("$D/ModelDataset/Omatrix_1.csv", drop=[1]) |> DataFrame
     Omatrix = Vector(Omatrix[!,1])
     RWParams.O[1] .= Diagonal(Omatrix)
 
-    # create Gam
     RWParams.Gam[1] .= RWParams.O[1]^(-1) * RWParams.A[1] * inv(RWParams.A[1]' * RWParams.O[1]^(-1) * RWParams.A[1])
     RWParams.Gam2[1] .= RWParams.Gam[1]
 
@@ -156,44 +145,39 @@ function create_RWParams!(RWParams::StructRWParams, majorregions_all::DataFrame,
     indmin = repeat(row_min, 1, num_repeats)
     RWParams.Gam3[1][RWParams.Gam3[1] .> indmin] .= 0
 
-    # fill the rest of A, Adash, O in a for loop
     for jj in 2:(size(majorregions_all, 1)-1)
-    #stringer = "$D/ModelDataset/Kmatrix_$(jj).csv"
-    #stringer2 = "$D/ModelDataset/Omatrix_$(jj).csv"
-    #Kmatrix = Matrix(CSV.File(stringer) |> DataFrame)
-    Kmatrix = CSV.File("$D/ModelDataset/Kmatrix_$(jj).csv") |> Tables.matrix
-    Kmatrix = Kmatrix[:, majorregions_all.rowid[jj-1] + 2 : majorregions_all.rowid[jj]]
+       
+        Kmatrix = CSV.File("$D/ModelDataset/Kmatrix_$(jj).csv") |> Tables.matrix
+        Kmatrix = Kmatrix[:, majorregions_all.rowid[jj-1] + 2 : majorregions_all.rowid[jj]]
 
-    #Omatrix = Matrix(CSV.File(stringer2, drop=[1]) |> DataFrame)
-    Omatrix = CSV.File("$D/ModelDataset/Omatrix_$(jj).csv", drop=[1]) |> Tables.matrix
-    RWParams.A[jj] .= Matshifter(Kmatrix)
-    RWParams.Adash[jj] .= Matshifter(Kmatrix)
-    Omatrix = Vector(Omatrix[:,1])
-    RWParams.O[jj] .= Diagonal(Omatrix)
-    RWParams.Gam[jj] .= RWParams.O[jj]^(-1) * RWParams.A[jj] * inv(RWParams.A[jj]' * RWParams.O[jj]^(-1) * RWParams.A[jj])
+        Omatrix = CSV.File("$D/ModelDataset/Omatrix_$(jj).csv", drop=[1]) |> Tables.matrix
+        RWParams.A[jj] .= Matshifter(Kmatrix)
+        RWParams.Adash[jj] .= Matshifter(Kmatrix)
+        Omatrix = Vector(Omatrix[:,1])
+        RWParams.O[jj] .= Diagonal(Omatrix)
+        RWParams.Gam[jj] .= RWParams.O[jj]^(-1) * RWParams.A[jj] * inv(RWParams.A[jj]' * RWParams.O[jj]^(-1) * RWParams.A[jj])
 
 
-    indmax =  repeat(maximum(RWParams.Gam[jj], dims=2), 1, majorregions_all.n[jj] - 1)
-    RWParams.Gam2[jj] .= RWParams.Gam[jj]
-    RWParams.Gam2[jj][RWParams.Gam[jj] .< indmax] .= 0
+        indmax =  repeat(maximum(RWParams.Gam[jj], dims=2), 1, majorregions_all.n[jj] - 1)
+        RWParams.Gam2[jj] .= RWParams.Gam[jj]
+        RWParams.Gam2[jj][RWParams.Gam[jj] .< indmax] .= 0
 
 
-    indmin = repeat(minimum(RWParams.Gam[jj], dims=2), 1, majorregions_all.n[jj] - 1)
-    RWParams.Gam3[jj] .= RWParams.Gam[jj]
-    RWParams.Gam3[jj][RWParams.Gam3[jj] .> indmin] .= 0   
+        indmin = repeat(minimum(RWParams.Gam[jj], dims=2), 1, majorregions_all.n[jj] - 1)
+        RWParams.Gam3[jj] .= RWParams.Gam[jj]
+        RWParams.Gam3[jj][RWParams.Gam3[jj] .> indmin] .= 0   
     end
 
     R = size(majorregions, 1) - 1   # regions
     I = 10                          # industries
 
-    # create B 
     for jj in 1:size(majorregions, 1) - 1
-    RWParams.B[jj] .= inv(RWParams.A[jj]' * RWParams.O[jj] * RWParams.A[jj])
+        WParams.B[jj] .= inv(RWParams.A[jj]' * RWParams.O[jj] * RWParams.A[jj])
     end
 
     # fossil fuel capital
     RWParams.KF .= regions.ffl_capacity_mw ./ regions.ffl_capacity_mw[1]
-    RWParams.KF .+= 10.0^(-1)
+    RWParams.KF .+= 10.0^(-1)       # add in minimum of generation
 
     # set max fossil fuel use to capacity
     RWParams.maxF .= RWParams.KF
@@ -205,23 +189,22 @@ function create_RWParams!(RWParams::StructRWParams, majorregions_all::DataFrame,
     RWParams.Zmax .= Linedata.lcap ./ regions.ffl_capacity_mw[1]
 
     # renewable potential
-    RWParams.thetaS .= coalesce.(thetaS, 0.2) # set places without sunlight data to very low
+    RWParams.thetaS .= coalesce.(thetaS, 0.2)   # set places without sunlight data to very low
     replace!(RWParams.thetaS, 0 => 0.2)
-    RWParams.thetaW .= coalesce.(thetaW, 0.2) # set places without wind data to very low
+    RWParams.thetaW .= coalesce.(thetaW, 0.2)   # set places without wind data to very low
 
-    #shift potential so that urban regions don't install lots of capital, then
-    #scale by relative country costshifters
+    # shift potential so that urban regions don't install lots of capital, then
+    # scale by relative country costshifters
     RWParams.scalar = params.renewablecostscaler
     RWParams.Countryshifter .= regions[!, :costrel]
 
-    # define costshifter
     for kk in 1:params.N
-    range = majorregions[!, :rowid2][kk]:majorregions[!, :rowid][kk]
+        range = majorregions[!, :rowid2][kk]:majorregions[!, :rowid][kk]
 
-    RWParams.costshifter[range] = (
-    (regions[!, :pop_dens][range] .^ popelas) ./ 
-    (regions[!, :pop_dens][majorregions[!, :rowid2][kk]] .^ popelas)
-    ) .* RWParams.scalar .* RWParams.Countryshifter[range]
+        RWParams.costshifter[range] = (
+        (regions[!, :pop_dens][range] .^ popelas) ./ 
+        (regions[!, :pop_dens][majorregions[!, :rowid2][kk]] .^ popelas)
+        ) .* RWParams.scalar .* RWParams.Countryshifter[range]
     end
 
     # production capital
@@ -327,17 +310,15 @@ function create_curtmat!(curtmatno::Matrix, curtmat4::Matrix, curtmat12::Matrix,
     curtmat12 .= DataFrame(CSV.File("$D/CurtailmentUS/heatmap_us_mat_12hour.csv", header = false)) |> Matrix
 
     n = size(curtmatno, 1)
-    x = range(start = 0.0, stop = 1.0, length=n)  # Change these to reflect your actual coordinate grids
+    x = range(start = 0.0, stop = 1.0, length=n)
     y = range(start = 0.0, stop = 1.0, length=n) 
     z = range(start = 0.0, stop = 12.0, length=3)
 
     samplepointssolar = [xi for yj in y, xi in x, zk in z]
     samplepointswind = [yj for yj in y, xi in x, zk in z]
     samplepointsbat = [zk for yj in y, xi in x, zk in z]
-    #(samplepointssolar, samplepointswind, samplepointsbat) = ndgrid(x, y, z)
 
     # fill the NaN border cells with the same value
-
     for i = 2:size(curtmatno, 1)
         curtmatno[size(curtmatno,1)-i+2, i] = curtmatno[size(curtmatno,1)-i+1, i]
         curtmat4[size(curtmat4,1)-i+2, i] = curtmat4[size(curtmat4,1)-i+1, i]
@@ -354,7 +335,6 @@ function battery_req!(batteryrequirements::Matrix, D::String)
     batteryrequirements[15, 1] = 12
     batteryrequirements[15, 2] = 100
     broadcast!(x -> x / 100, batteryrequirements[:, 2], batteryrequirements[:, 2])
-    #batteryrequirements[:, 2] .= batteryrequirements[:, 2] ./ 100
     return batteryrequirements
 end
 

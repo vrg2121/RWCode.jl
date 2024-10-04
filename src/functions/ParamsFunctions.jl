@@ -2,17 +2,15 @@ module ParamsFunctions
 
 export load_parameters_csv, create_params!, fill_params, tS!, tW!
 
-# export structs for type stability when using in functions
 export StructParams
 
-# import functions from packages
 import CSV: CSV
 import DataFrames: DataFrame
 import MAT: matopen
 import Tables: Tables
 
+
 function load_parameters_csv(D::String)
-    # load CSV files
     regions = CSV.File("$D/ModelDataset/Regions_sorted.csv", header=true) |> DataFrame
     replace!(regions.solar_mean, "NA" => "0.0")
     regions.solar_mean = parse.(Float64, regions.solar_mean)
@@ -25,7 +23,6 @@ function load_parameters_csv(D::String)
     return regions, majorregions, Linecounts
 end
 
-# create a struct for params
 mutable struct StructParams
     Z::Matrix{Float64}
     zsector::Matrix{Float64}
@@ -69,7 +66,7 @@ mutable struct StructParams
     StructParams() = new(
         Matrix{Float64}(undef, 2531, 1),                     # Pre-allocated Z
         Matrix{Float64}(undef, 2531, 10),                    # Pre-allocated Zsector
-        10,                                                   # Set I
+        10,                                                  # Set I
         [Matrix{Float64}(undef, 2531, 2531) for _ in 1:10],  # Pre-allocated tau vector
         Matrix{Float64}(undef, 2531, 2531),                  # Pre-allocated tau1s
         Matrix{Float64}(undef, 10, 4),                       # pre-allocated Vs
@@ -106,62 +103,59 @@ mutable struct StructParams
     )
 end
 
-# create a function to fill params
 function create_params!(params::StructParams, z_path::String, zsector_path::String, tau_paths::Vector{String}, 
                         regions::DataFrame, majorregions::DataFrame, Linecounts::DataFrame, D::String)
-    # Load Z from its file and fill the pre-allocated matrix
+
     z_file = matopen(z_path)
     params.Z .= read(z_file, "Z")::Matrix{Float64}
     close(z_file)
     
 
-    # Load Zsector from its file and fill the pre-allocated matrix
     zsector_file = matopen(zsector_path)
     params.zsector .= read(zsector_file, "Zsec")::Matrix{Float64}
     close(zsector_file)
     
-    # initiate I
-    params.I = 10           # industries
+    # number of sectors
+    params.I = 10           
 
-    # Load each tau matrix from its respective file into the pre-allocated matrices
+    # import trade costs
     for i in 1:10
         tau_file = matopen(tau_paths[i])
         params.tau[i] .= read(tau_file, "tau_export")::Matrix{Float64}
         close(tau_file)
     end
-    # only way to improve the speed of this query is to use a different file type (HDF5)
 
-    params.tau1s .= params.tau[end]
+    params.tau1s .= params.tau[end]     # dummy 1 sector
 
-    # load in sectoral shares
-    secshares = CSV.File("$D/ModelDataset/secshares.csv", select=[2, 3]) |> DataFrame
+    # sectoral shares
+    secshares = CSV.File("$D/ModelDataset/secshares.csv", select=[2, 3]) |> DataFrame 
+    
     for i in 1:10
-        params.Vs[i, 2] = secshares[i, 1] - 1e-15                                    # vE
-        params.Vs[i, 3] = secshares[i, 2] - 1e-15                                    # vF
+        params.Vs[i, 2] = secshares[i, 1] - 1e-15                                    
+        params.Vs[i, 3] = secshares[i, 2] - 1e-15                                   
         params.Vs[i, 4] = 0.3
-        params.Vs[i, 1] = 1 - (secshares[i, 1] + secshares[i, 2]) - params.Vs[i, 4]  # vL
+        params.Vs[i, 1] = 1 - (secshares[i, 1] + secshares[i, 2]) - params.Vs[i, 4] 
     end
-
+    
     # expenditure shares
-    #sectoralconshares = CSV.File("$D/ModelDataset/expshare.csv", select=3:12) |> Tables.matrix
-    #params.betaS .= sectoralconshares
-    params.betaS .= CSV.File("$D/ModelDataset/expshare.csv", select=3:12) |> Tables.matrix
+    params.betaS .= CSV.File("$D/ModelDataset/expshare.csv", select=3:12) |> Tables.matrix 
 
-    ## programer Parameters
-    params.tol = 1e-4
+    # programmer parameter
+    params.tol = 1e-4 
 
-    ## baseline parameters
-
+    # ---------------------------- baseline parameters --------------------------- #
+    
     # regions and consumer / workers
-    params.J = size(regions, 1)
-    params.sig = 5
-    params.L .= regions[!,"pop_sum"] ./ regions[!, "pop_sum"][1]
-    params.N = size(majorregions, 1)
+    params.J = size(regions, 1)                                     # number of regions
+    params.sig = 5                                                  # CES parameter
+    params.L .= regions[!,"pop_sum"] ./ regions[!, "pop_sum"][1]    # number of workers in each region
+    params.N = size(majorregions, 1)                                # number of majorregion groups
 
     # fossil fuel production
-    params.alpha1 = 0.3
+    params.alpha1 = 0.3    # curvature in fossil fuel production function
     params.alpha2 = 0.7    # capital share
 
+    
     # final good production input shares
     params.vE = 0.03 - 1e-15
     params.vF = 0.03 - 1e-15
@@ -169,8 +163,9 @@ function create_params!(params::StructParams, z_path::String, zsector_path::Stri
     params.vK = 1 - params.vL - params.vF - params.vE + 3e-15
     params.cdc = params.vL^params.vL * params.vE^params.vE * params.vF^params.vF
     params.kappa .= 2.0   # parameter on electricity usefulness in direct fossil fuel
-    params.psi = 1.4     # elasticity between electricity and fossil fuels substitution
+    params.psi = 1.4      # elasticity between electricity and fossil fuels substitution
     params.r_K .= 1.0     # rent paid by production capital
+
 
     # growth parameters
     params.T = 10          # number of periods
@@ -185,8 +180,8 @@ function create_params!(params::StructParams, z_path::String, zsector_path::Stri
     params.deltaP = 0.05   # depreciation rate on production capital
     params.deltaB = 0.05   # depreciation rate on batteries
 
-    # renewable potential
-    params.varrho = 0.7
+    
+    params.varrho = 0.7    # dispersion parameter on Frechet shocks for renewables
 
     # resistance weight for B Matrix
     params.Rweight = 1.5
@@ -214,14 +209,15 @@ function fill_params(regions::DataFrame, majorregions::DataFrame, Linecounts::Da
     return params
 end
 
+# renewable potential
 function tS!(thetaS::Vector, capacityfactorS::Int, regions::DataFrame)
     thetaS .= regions.solar_mean ./ regions.solar_mean[1]
     thetaS .= capacityfactorS .* thetaS
-    thetaS .= coalesce.(thetaS, 0.2)
+    thetaS .= coalesce.(thetaS, 0.2)                        # set places without sunlight data to very low
 end
 
 function tW!(thetaW::Vector, capacityfactorW::Int, regions::DataFrame)
-    thetaW .= regions.wind_mean ./ regions.solar_mean[1] # is this supposed to be divied by solar_mean?
+    thetaW .= regions.wind_mean ./ regions.solar_mean[1]    # is this supposed to be divied by solar_mean?
     thetaW .= capacityfactorW .* thetaW
 end 
 

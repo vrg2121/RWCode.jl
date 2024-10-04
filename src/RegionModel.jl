@@ -26,9 +26,6 @@ function data_set_up(kk::Int, majorregions::DataFrame, Linecounts::DataFrame, RW
     local Kshifter = Lsector[ind, :] .* (params.Vs[:,4]' .* ones(n, 1)) ./
                     (params.Vs[:,1]' .* ones(n, 1)) .*
                     (wage[ind] ./ rP[ind])
-    #Ltotal=sum(Lshifter,dims=2)
-    #Jlength= n
-    # all of these are varying correctly
 
     # define data for inequality constraints
     "local linecons = copy(RWParams.Zmax[l_ind])
@@ -65,22 +62,19 @@ function data_set_up(kk::Int, majorregions::DataFrame, Linecounts::DataFrame, RW
                             regionParams.thetaW[ind] * KR_W[ind]
     local @views KFshifter=KF[ind]
 
+    # define bounds
     if method == "market"
-        #println("using method market to set YFmax, LB, UB, guess")
-
-        # define bounds
         local YFmax=regionParams.maxF[ind]
         local LB = [zeros(n); KRshifter]
         local UB = [fill(1000, n); YFmax + KRshifter]
 
         local guess = [KRshifter .- 0.001; KRshifter]
     elseif method == "steadystate"
-        #println("using method steadystate to set YFmax, LB, UB, guess")
         local YFmax =KF[ind]
         local LB = [zeros(n); KRshifter]
-        local UB = [fill(1000, n); YFmax .+ KRshifter .+ 1] # different from market
+        local UB = [fill(1000, n); YFmax .+ KRshifter .+ 1] 
 
-        local guess = [KRshifter; KRshifter .+ 0.001] # different from market
+        local guess = [KRshifter; KRshifter .+ 0.001]
 
     elseif method == "steadystate_imp"
         local YFmax = KF[ind]
@@ -95,8 +89,7 @@ function data_set_up(kk::Int, majorregions::DataFrame, Linecounts::DataFrame, RW
 
     return l_guess, LB, UB, guess, power, shifter, KFshifter, KRshifter, n, mid
 end
-# 1842 calls on Market.jl compiler
-# lots of type inference
+
 
 function data_set_up_exog(kk::Int, majorregions::DataFrame, Linecounts::DataFrame, RWParams::StructRWParams, laboralloc::Matrix, Lsector::Matrix, params,
     wage::Union{Matrix, Vector}, rP::Vector, pg_n_s::Matrix, pE::Union{Vector, Matrix}, kappa::Int, regionParams, KF::Matrix, p_F::Union{Int64, Float64}, 
@@ -112,9 +105,6 @@ function data_set_up_exog(kk::Int, majorregions::DataFrame, Linecounts::DataFram
     local Kshifter = Lsector[ind, :] .* (params.Vs[:,4]' .* ones(n, 1)) ./
                     (params.Vs[:,1]' .* ones(n, 1)) .*
                     (wage[ind] ./ rP[ind])
-    #Ltotal=sum(Lshifter,dims=2)
-    #Jlength= n
-    # all of these are varying correctly
 
     # define data for inequality constraints
     "local linecons = copy(RWParams.Zmax[l_ind])
@@ -182,16 +172,12 @@ function add_model_constraint(model::Model, regionParams, params::StructParams, 
     return @constraint(model, ceq, quad_mat[1] ==0)
 
 end
-# 418 calls on Market.jl compiler
-# lots of type inference
 
 function add_model_objective(model::Model, power::Matrix, shifter::Matrix, KFshifter::Union{Vector, SubArray}, KRshifter::Vector, p_F::Union{Float64, Vector, Int}, params::StructParams)
     local x = model[:x]
     @objective(model, Min, obj(x, power, shifter, KFshifter, KRshifter, p_F, params))
 end
 
-# 683 calls on Market.jl compiler
-# lots of type inference
 
 function add_model_objective_test(model::Model, power::Matrix, shifter::Matrix, KFshifter::Union{Vector, SubArray}, 
             KRshifter::Vector, p_F::Union{Float64, Vector, Int}, params::StructParams, mid::Int, power2::Float64)

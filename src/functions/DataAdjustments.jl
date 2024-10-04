@@ -1,5 +1,3 @@
-# DataAdjustments.jl
-
 module DataAdjustments
 
 export Matshifter

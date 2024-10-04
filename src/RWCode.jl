@@ -77,86 +77,84 @@ import .ModelConfiguration: ModelConfig
 # create path to Guesses folder
 # G = "C:/Users/vrg2121/.julia/dev/RWCodeJulia/Guesses"
 
-
-
-# ---------------------------------------------------------------------------- #
-#                         Import all Relevant Functions                        #
-# ---------------------------------------------------------------------------- #
-# Set Up Parameters
 include("./functions/ParamsFunctions.jl") 
 include("./Params.jl")
 import .Params: setup_parameters
 
-# Load Data
 include("./functions/DataAdjustments.jl")
 include("./functions/DataLoadsFunc.jl")
 include("./DataLoads.jl")
 import .DataLoads: load_data
 
-# Initial Equilibrium
 include("./functions/MarketEquilibrium.jl")
 include("./RegionModel.jl")
 include("./functions/MarketFunctions.jl")
 include("./Market.jl")
 import .Market: solve_market
 
-# Long Run Equilibrium
 include("./functions/SteadyStateFunctions.jl")
 include("./SteadyState.jl")
 import .SteadyState: solve_steadystate
 
-# Run Transitional Dynamics
 include("./functions/TransitionFunctions.jl")
 include("./Transition.jl")
 import .Transition: solve_transition
 
-# Write Data
 include("./WriteData.jl")
 import .WriteData: writedata
 
-# Write Data with Battery configurations
 include("./WriteDataBattery.jl")
 import .WriteDataBattery: writedata_battery
 
-# -------------------- Run Exogenous Technology Equilibria ------------------- #
+# Exogenous Technology Equilibria 
 
-# Long Run Equilibrium with Exogenous Tech
 include("./functions/SteadyStateExogFunc.jl")
 include("./SteadyStateExog.jl")
 import .SteadyStateExog: solve_steadystate_exog
 
-# Transitional Dynamics with Exogenous Tech
 include("./functions/TransitionExogFunc.jl")
 include("./TransitionExog.jl")
 import .TransitionExog: solve_transition_exog
 
-# Data Outputs with Exogenous Tech
 include("./WriteDataExog.jl")
 import .WriteDataExog: writedata_exog
 
+"""
+    run_rwcode(config::ModelConfig, Data::String, Guesses::String, Results::String)
 
-function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
+Takes in user configuration, data, and guesses to run the model. Output is saved in Results file.
+
+## Input
+- `config::ModelConfig`-- struct of user defined model configurations.
+- `Data::String`-- full path to Data folder.
+- `Guesses::String`-- full path to Guesses folder.
+- `Results::String`-- full path to Results folder.
+
+## Output
+CSV files in Results folder. Name and content of files depend on user configuration.
+"""
+function run_rwcode(config::ModelConfig, Data::String, Guesses::String, Results::String)
 
     # ---------------------------------------------------------------------------- #
     #                               Set Up Parameters                              #
     # ---------------------------------------------------------------------------- #
 
     println("Setting up parameters...")
-    P = setup_parameters(D, G);
+    P = setup_parameters(Data, Guesses);
 
     # ---------------------------------------------------------------------------- #
     #                                  Data Loads                                  #
     # ---------------------------------------------------------------------------- #
     
     println("Loading data inputs...")
-    DL = load_data(P, D)
+    DL = load_data(P, Data)
     
     # ---------------------------------------------------------------------------- #
     #                              Initial Equilibrium                             #
     # ---------------------------------------------------------------------------- #
 
     println("Solving initial equilibrium...")    
-    M = solve_market(P, DL, config, G);
+    M = solve_market(P, DL, config, Guesses);
     
     
     # ---------------------------------------------------------------------------- #
@@ -164,7 +162,7 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
     # ---------------------------------------------------------------------------- #
 
     println("Solving initial long run equilibrium...")
-    S = solve_steadystate(P, DL, M, config, G)
+    S = solve_steadystate(P, DL, M, config, Guesses)
 
     # ---------------------------------------------------------------------------- #
     #                           Run Transitional Dynamics                          #
@@ -174,20 +172,18 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
         # ---------------------- Run Transition without Subsidy ---------------------- #
         println("Solving transitional dynamics without Subsidy...")
         Subsidy = 0
-        T = solve_transition(P, DL, M, S, Subsidy, config, G)
+        T = solve_transition(P, DL, M, S, Subsidy, config, Guesses)
 
         println("Writing outputs of transitional dynamics without Subsidy...")
-        writedata(P, DL, M, S, T, Subsidy, config, R)
-        #writedata(P, DL, M, S, T, Subsidy, config, path)
+        writedata(P, DL, M, S, T, Subsidy, config, Results)
 
         # ------------------------ Run Transition with Subsidy ----------------------- #
         println("Solving transitional dynamics with Subsidy...")
         Subsidy = 1
-        TS = solve_transition(P, DL, M, S, Subsidy, config, G)
+        TS = solve_transition(P, DL, M, S, Subsidy, config, Guesses)
 
         println("Writing outputs of transitional dynamics with Subsidy...")
-        writedata(P, DL, M, S, TS, Subsidy, config, R)
-        #writedata(P, DL, M, S, TS, Subsidy, config, path)
+        writedata(P, DL, M, S, TS, Subsidy, config, Results)
 
     end
 
@@ -208,13 +204,13 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
             Subsidy = 0
 
             println("Solving long run equilibrium when battery storage hours = $(config.hoursofstorage)...")
-            SB = solve_steadystate(P, DL, M, config, G)
+            SB = solve_steadystate(P, DL, M, config, Guesses)
 
             println("Solving transitional dynamics when battery storage hours = $(config.hoursofstorage)...")
-            TB = solve_transition(P, DL, M, SB, Subsidy, config, G)
+            TB = solve_transition(P, DL, M, SB, Subsidy, config, Guesses)
             
             println("Writing outputs when battery storage hours = $(config.hoursofstorage)...")
-            writedata_battery(P, M, SB, TB, config, R)
+            writedata_battery(P, M, SB, TB, config, Results)
         end
     end
 
@@ -235,13 +231,13 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
         for exogindex in 3:-1:1
             exogindex = 1
             println("Solving long run equilibrium with exogenous tech when exog index = $exogindex...")
-            SE = SteadyStateExog.solve_steadystate_exog(P, DL, M, config, exogindex, G)
+            SE = SteadyStateExog.solve_steadystate_exog(P, DL, M, config, exogindex, Guesses)
 
             println("Solving transitional dynamics with exogenous tech when exog index = $exogindex...")
             TE = solve_transition_exog(P, DL, M, SE, config, exogindex)
             
             println("Writing outputs with exogenous tech when exog index = $exogindex...")
-            writedata_exog(TE, exogindex, R)
+            writedata_exog(TE, exogindex, Results)
         end
             
     end
@@ -257,13 +253,13 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
         config.hoursofstorage = 12
 
         println("Solving long run equilibrium with curtailment (hours of battery storage = 12)...")
-        SC = solve_steadystate(P, DL, M, config, G)
+        SC = solve_steadystate(P, DL, M, config, Guesses)
 
         println("Solving transitional dynamics with curtailment (hours of battery storage = 12)...")
-        TC = solve_transition(P, DL, M, SC, Subsidy, config, G)
+        TC = solve_transition(P, DL, M, SC, Subsidy, config, Guesses)
 
         println("Writing output for curtailment (hours of battery storage = 12)...")
-        writedata_battery(P, M, SC, TC, config, R)
+        writedata_battery(P, M, SC, TC, config, Results)
     end
 
 

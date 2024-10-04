@@ -14,17 +14,12 @@ import ..ModelConfiguration: ModelConfig
 # export variables
 export solve_steadystate
 
-
-# ---------------------------------------------------------------------------- #
-#                             Step 0: Initial Guess                            #
-# ---------------------------------------------------------------------------- #
-
-
 """
-NOTES ON THE TRANSLATION FROM JULIA TO MATLAB
+# NOTES ON THE TRANSLATION FROM JULIA TO MATLAB
 
-Manually Solving NLP Optimization Problem using Ipopt.jl
-user defined gradient:
+## Manually Solving NLP Optimization Problem using Ipopt.jl
+
+### Why not have user defined gradient for the optimization problem:
 - Ipopt optimizer is unstable when it comes to multithreading and throws errors with large numbers of threads
 - the first multithreaded loop keeps ending up with a negative number in x, which is technically impossible
     - checking the error suggests that there is instability in the model that is difficult to resolve
@@ -32,12 +27,10 @@ user defined gradient:
 - A user defined gradient slows down the model because you cannot multithread it without creating errors
 - results from model with user defined gradient the same as results from automatic solve
 
-user defined hessian:
+### User defined hessian:
 - There is not a good way to extract the lagrangian as the model is being solved in order to manually calculate the hessian
 
-
-
-Calculating a 3D Interpolation (MATLAB interp3()) using Interpolations.jl:
+### Calculating a 3D Interpolation (MATLAB interp3()) using Interpolations.jl:
 - Interpolation in Julia does not require an entire meshgrid, just a range of values defined by starting point, end point and step size
 - In Julia, set up the interpolation function to align with the matlab interp3()
 - Key difference between MATLAB and Julia is that to get to the same valure, you have to flip the x and y inputs in Julia 
@@ -50,7 +43,24 @@ Calculating a 3D Interpolation (MATLAB interp3()) using Interpolations.jl:
   this by comparing graphs of the interpolation grids between MATLAB and Julia.
 """
 
+"""
+    solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::ModelConfig, G::String)
 
+Solve the steadystate equilibrium for wind and solar in the energy grid.
+
+## Inputs
+- `P::NamedTuple` -- NamedTuple of parameters. Output of `P = setup_parameters(D, G)`
+- `DL::NamedTuple` -- NamedTuple of model data. Output of `DL = load_data(P, D)`
+- `M::NamedTuple` -- NamedTuple of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
+- `config::ModelConfig` -- struct of user defined model configurations.
+- `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
+
+## Outputs
+Named tuple containing steadystate levels of GDP, wages, labor, capital, electricity, fossil fuels, etc.
+    Updates some guesses when hours of storage = 0.
+## Notes
+Calculated for all configurations of the model.
+"""
 function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::ModelConfig, G::String)
 
     pB_shifter = P.pB_shifter
@@ -72,7 +82,7 @@ function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::
 
     # ------------------ Solve Power Output within given capital ----------------- #
 
-    sseq = solve_power_output(D.RWParams, P.params, config.RunBatteries, config.RunCurtailment,
+    sseq = solve_steadystate_eq(D.RWParams, P.params, config.RunBatteries, config.RunCurtailment,
                                                 config.Initialprod, D.R_LR, P.majorregions, P.Linecounts, P.linconscount,
                                                 D.regionParams, curtailmentswitch, interp3,
                                                 P.T, P.kappa, M.mrkteq, config, pB_shifter, G);
@@ -137,13 +147,6 @@ function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::
         ((1 - P.params.beta) * (D.R_LR .* (D.KR_init_W + D.KR_init_S) .* M.p_KR_bar_init .* M.mrkteq.PC_init + D.R_LR .* M.KF_init .* M.mrkteq.PC_init) ./ M.mrkteq.Expenditure_init)
 
     welfare_fossilchange = -M.mrkteq.fossilsales ./ M.mrkteq.Expenditure_init
-
-    # Get changes in manufacturing share
-    comparativeadvantagechange = M.laboralloc_init ./ sseq.laboralloc_LR
-    scatter(log.(P.params.L[P.majorregions.rowid2[1]:P.majorregions.rowid[1]]), sseq.result_price_LR[1])
-
-    w_real_LR = sseq.w_LR ./ sseq.PC_guess_LR
-    GDP_ind_LR = (sseq.w_LR .* P.params.L .+ sseq.p_E_LR .* sseq.D_LR .+ sseq.rP_LR .* sseq.KP_LR .+ sseq.p_F_LR .* fusage_ind_LR) ./ sseq.PC_guess_LR
 
     return (
     sseq = sseq,

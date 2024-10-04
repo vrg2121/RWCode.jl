@@ -1,18 +1,38 @@
 module DataLoads
 
-# export data
 export load_data
 
-# load functions
 using ..DataLoadsFunc, ..DataAdjustments
 
-# load functions from packages
 import CSV: CSV
 import DataFrames: DataFrame
 
+"""
+   load_data(P::NamedTuple, D::String)
 
+Loads and configures all data for the model
+   
+## Inputs
+- `P::NamedTuple` -- NamedTuple of model parameters. Output from `P = setup_parameters(Data, Guesses)`
+- `D::String` -- path to Data folder. `D = "path/to/Data"`
+
+## Outputs
+NamedTuple of all data necessary to run the model. The NamedTuple contains constants 
+    and structs like RWParams and regionParams.
+
+## Notes
+Descriptions of the data are in the submodule `DataLoadsFunc.jl` comments.
+
+## Example
+```julia-repl
+julia> D = "path/to/Data"
+julia> G = "path/to/Guesses"
+julia> P = setup_parameters(D, G)
+julia> DL = load_data(P, D) # all data is saved in named tuple variable, DL
+
+```
+"""
 function load_data(P::NamedTuple, D::String)
-    # initialize data
     wage_init = Vector{Float64}(undef, 2531)
     secshares = Matrix{Float64}(undef, 10, 2)
     sectoralempshares = Matrix{Union{Float64, Missing}}(undef, 2531, 11)
@@ -20,16 +40,8 @@ function load_data(P::NamedTuple, D::String)
     curtmat = zeros(21, 21, 3)
     batteryrequirements = Matrix{Float64}(undef, 15, 2)
 
-
-    # ---------------------------------------------------------------------------- #
-    #                                   Load Data                                  #
-    # ---------------------------------------------------------------------------- #
-
-    # load global csv data
-
     regions_all, Linedata, majorregions_all, Fossilcapital, Renewablecapital, Electricityregionprices = load_csv_data(D)
 
-    # initiate wage
     wage_init = w_i!(wage_init, P.regions)
 
     # long run interest rate
@@ -38,32 +50,16 @@ function load_data(P::NamedTuple, D::String)
     rP_LR = R_LR - 1 + P.params.deltaB    # long run return on production capital
     # this variable is calculated in SteadyState.jl differently. This one is only used locally to this file
 
-    # create RWParams
     RWParams = fill_RWParams(majorregions_all, P.majorregions, P.regions, Linedata, P.params, wage_init, P.thetaS, P.thetaW, P.popelas, rP_LR, D);
-    ## right now RWParams is stored in the heap and accessed by a chain of addresses. 
-    ## Alternative method to store in stack using immutable struct is in rwparams_notes.jl 
-
-    # load in sectoral shares
 
     secshares, sectoralempshares = sec_shares!(secshares, sectoralempshares, D)
 
-    # ---------------------------------------------------------------------------- #
-    #                             Load Fossil Fuel Data                            #
-    # ---------------------------------------------------------------------------- #
-
-    # FFsupplyCurves
+    # obtain country supply curves
     FFsupplyCurves = fill_FFsupply(D)
-
-    # GsupplyCurves
     GsupplyCurves = fill_Gsupply(D)
 
     P.regions.reserves .= P.regions.reserves ./ sum(P.regions.reserves)
 
-    # ---------------------------------------------------------------------------- #
-    #                            Convert to Model Inputs                           #
-    # ---------------------------------------------------------------------------- #
-
-    # regionparams
     regionParams = deepcopy(RWParams)
 
     # initial renewable capital
@@ -81,11 +77,8 @@ function load_data(P::NamedTuple, D::String)
     #                             LOAD CURTAILMENT DATA                            #
     # ---------------------------------------------------------------------------- #
 
-    # linear map
-    # storagey, storagex = linear_map()
-    # have not seen either variable called anwhere else
-
-    # create curtmat
+    # linear map (unused variables)
+    #storagey, storagex = linear_map()
 
     curtmat, samplepointssolar, samplepointswind, samplepointsbat = create_curtmat!(curtmatmx, curtmatmx, curtmatmx, curtmat, D);
 

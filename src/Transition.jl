@@ -1,9 +1,7 @@
 module Transition
 
-# load functions
 using ..DataAdjustments, ..TransitionFunctions, ..MarketEquilibrium
 
-# load packages
 using Ipopt, JuMP, Interpolations
 import Random: Random
 import Plots: plot, plot!
@@ -13,11 +11,30 @@ import SparseArrays: sparse
 
 import ..ModelConfiguration: ModelConfig
 
-# import parameters, data and variables
-
 export solve_transition
 
+"""
+    solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig, G::String)
 
+Model of the renewable energy transition up to 2040.
+
+## Inputs
+- `P::NamedTuple` -- NamedTuple of parameters. Output of `P = setup_parameters(D, G)`
+- `D::NamedTuple` -- NamedTuple of model data. Output of `DL = load_data(P, D)`
+- `M::NamedTuple` -- NamedTuple of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
+- `S::NamedTuple` -- NamedTuple of steady state equilibrium. Output of `S = solve_steadystate(P, DL, M, config, Guesses)`
+- `Subsidy::Int` -- Whether or not to calculate transition with a renewable energy subsidy.
+- `config::ModelConfig` -- struct of user defined model configurations. `config = ModelConfig()`
+- `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
+
+## Outputs
+Named tuple containing path of renewable energy transition across specific regions and the world; share of renewables in the US; wage changes,
+    capital changes, electricity changes and fossil fuel changes until 2040. Saves price of fuel when hours of battery 
+    storage is 0 in Guesses.
+
+## Notes
+Calculated with some variations when RunTransition==1, RunBatteries==1, RunExog==1, RunCurtailment==1. Not calculated when RunImprovement==1.
+"""
 function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig, G::String)
     # set st 
     st = zeros(P.params.J, P.T + 1)
@@ -36,7 +53,6 @@ function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::Named
         curtailmentswitch = 1
     end
 
-    # initialize data used in welfare 
     Init_weight = Vector{Float64}(undef, 2531)
     welfare_wagechange_2040 = Vector{Float64}(undef, 2531)
     welfare_capitalchange_2040 = Vector{Float64}(undef, 2531)
@@ -83,7 +99,6 @@ function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::Named
     # ---------------------------------------------------------------------------- #
 
     # save the path for the price of capital
-
     for kk in 1:P.params.N
         ind = P.majorregions.rowid2[kk]:P.majorregions.rowid[kk]
         @views renewshare_path_region[kk, :] = (1 .- sum(transeq.YF_path[ind, :], dims=1) ./ sum(transeq.Y_path[ind, :], dims=1))'
