@@ -41,9 +41,7 @@ function prompt_for_vector(prompt, default=nothing)
     end
 end
 
-
-<<<<<<< Updated upstream
-=======
+"""
 This function guides the user through creating a mutable struct with the model configurations. The outputs for this function should be stored in a variable, e.g.
     config = ModelConfig(). The first 5 inputs take binary arguments: 1, 0. The next 3 configurations take integers and the last configuration, hoursvec
     takes a list of Int64 values, e.g. 1,2,3,4,....
@@ -96,7 +94,6 @@ Enter hoursvec (comma-separated, default = 2,4,6):
 ModelConfig(0, 1, 0, 0, 0, 2, 0, 0, [1, 3, 5])
 ```
 """
->>>>>>> Stashed changes
 mutable struct ModelConfig
     RunTransition::Int64
     RunBatteries::Int64
