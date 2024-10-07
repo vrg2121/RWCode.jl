@@ -4,7 +4,7 @@ module SteadyState
 using ..SteadyStateFunctions, ..DataAdjustments, ..MarketEquilibrium
  
 #import MAT
-import JLD2: @save
+import JLD2: jldsave
 import Plots: scatter
 import Interpolations: interpolate, Gridded, Linear
 
@@ -110,16 +110,28 @@ function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::
     PC_guess_LR = sseq.PC_guess_LR
     laboralloc_LR = sseq.laboralloc_LR
 
+    #if config.hoursofstorage == 0
+    #    @save "$G/laboralloc_LR_guess.jld2" laboralloc_LR
+    #    @save "$G/KR_LR_S_guess.jld2" KR_LR_S
+    #    @save "$G/KR_LR_W_guess.jld2" KR_LR_W
+    #    @save "$G/p_E_LR_guess.jld2" p_E_LR
+    #    @save "$G/w_LR_guess.jld2" w_LR
+    #    @save "$G/Dout_guess_LR.jld2" result_Dout_LR
+    #    @save "$G/Yout_guess_LR.jld2" result_Yout_LR
+    #    @save "$G/PC_guess_LR.jld2" PC_guess_LR
+    #end
+
     if config.hoursofstorage == 0
-        @save "$G/laboralloc_LR_guess.jld2" laboralloc_LR
-        @save "$G/KR_LR_S_guess.jld2" KR_LR_S
-        @save "$G/KR_LR_W_guess.jld2" KR_LR_W
-        @save "$G/p_E_LR_guess.jld2" p_E_LR
-        @save "$G/w_LR_guess.jld2" w_LR
-        @save "$G/Dout_guess_LR.jld2" result_Dout_LR
-        @save "$G/Yout_guess_LR.jld2" result_Yout_LR
-        @save "$G/PC_guess_LR.jld2" PC_guess_LR
+        jldsave("$G/laboralloc_LR_guess.jld2", laboralloc_LR)
+        jldsave("$G/KR_LR_S_guess.jld2", KR_LR_S)
+        jldsave("$G/KR_LR_W_guess.jld2", KR_LR_W)
+        jldsave("$G/p_E_LR_guess.jld2", p_E_LR)
+        jldsave("$G/w_LR_guess.jld2", w_LR)
+        jldsave("$G/Dout_guess_LR.jld2", result_Dout_LR)
+        jldsave("$G/Yout_guess_LR.jld2", result_Yout_LR)
+        jldsave("$G/PC_guess_LR.jld2", PC_guess_LR)
     end
+
 
 
     M.wageresults[:,2] = sseq.w_real
