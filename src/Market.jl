@@ -45,18 +45,31 @@ function solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::Str
 
 
     # Save variables
-    @save "$G/w_guess_mat.jld2" w_guess
-    @save "$G/p_E_guessmat.jld2" p_E_init
-    @save "$G/Dout_guess_init.jld2" result_Dout_init
-    @save "$G/Yout_guess_init.jld2" result_Yout_init
-    @save "$G/PC_guess_init.jld2" PC_guess_init
+    #@save "$G/w_guess_mat.jld2" w_guess
+    #@save "$G/p_E_guessmat.jld2" p_E_init
+    #@save "$G/Dout_guess_init.jld2" result_Dout_init
+    #@save "$G/Yout_guess_init.jld2" result_Yout_init
+    #@save "$G/PC_guess_init.jld2" PC_guess_init
 
-    @save "$G/laboralloc_guess.jld2" laboralloc
-    @save "$G/z_mat.jld2" Z
-    @save "$G/z_sec_mat.jld2" Zsec
-    @save "$G/wedge_vec.jld2" wedge
-    @save "$G/priceshifterupdate_vec.jld2" priceshifterupdate
-    @save "$G/fossilsales_guess.jld2" fossilsales
+    #@save "$G/laboralloc_guess.jld2" laboralloc
+    #@save "$G/z_mat.jld2" Z
+    #@save "$G/z_sec_mat.jld2" Zsec
+    #@save "$G/wedge_vec.jld2" wedge
+    #@save "$G/priceshifterupdate_vec.jld2" priceshifterupdate
+    #@save "$G/fossilsales_guess.jld2" fossilsales
+
+    jldsave("$G/w_guess_mat.jld2", w_guess=w_guess)
+    jldsave("$G/p_E_guessmat.jld2", p_E_init=p_E_init)
+    jldsave("$G/Dout_guess_init.jld2", result_Dout_init=result_Dout_init)
+    jldsave("$G/Yout_guess_init.jld2", result_Yout_init=result_Yout_init)
+    jldsave("$G/PC_guess_init.jld2", PC_guess_init=PC_guess_init)
+
+    jldsave("$G/laboralloc_guess.jld2", laboralloc=laboralloc)
+    jldsave("$G/z_mat.jld2", Z=Z)
+    jldsave("$G/z_sec_mat.jld2", Zsec=Zsec)
+    jldsave("$G/wedge_vec.jld2", wedge=wedge)
+    jldsave("$G/priceshifterupdate_vec.jld2", priceshifterupdate=priceshifterupdate)
+    jldsave("$G/fossilsales_guess.jld2", fossilsales=fossilsales)
 
     # set initial power output vector
     P_out_init = mrkteq.P_out

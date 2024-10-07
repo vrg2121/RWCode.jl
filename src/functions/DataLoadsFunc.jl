@@ -241,7 +241,7 @@ function fill_RWParams(majorregions_all::DataFrame, majorregions::DataFrame, reg
     return RWParams
 end
 
-function sec_shares!(secshares::Matrix, sectoralempshares::Matrix{Float64}, D::String)
+function sec_shares!(secshares::Matrix, sectoralempshares::Matrix{Union{Missing, Float64}}, D::String)
     secshares_df = CSV.File("$D/ModelDataset/secshares.csv") |> DataFrame
     secshares .= Matrix{Float64}(secshares_df[:, 2:3])
 
