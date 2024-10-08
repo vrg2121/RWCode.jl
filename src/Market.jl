@@ -16,7 +16,7 @@ using JuMP, Ipopt
 import Random: Random
 import LinearAlgebra: I
 import SparseArrays: sparse
-import JLD2: @save
+import JLD2: jldsave
 import DataFrames: DataFrame
 
 function solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::String)
@@ -58,18 +58,18 @@ function solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::Str
     #@save "$G/priceshifterupdate_vec.jld2" priceshifterupdate
     #@save "$G/fossilsales_guess.jld2" fossilsales
 
-    jldsave("$G/w_guess_mat.jld2", w_guess=w_guess)
-    jldsave("$G/p_E_guessmat.jld2", p_E_init=p_E_init)
-    jldsave("$G/Dout_guess_init.jld2", result_Dout_init=result_Dout_init)
-    jldsave("$G/Yout_guess_init.jld2", result_Yout_init=result_Yout_init)
-    jldsave("$G/PC_guess_init.jld2", PC_guess_init=PC_guess_init)
+    jldsave("$G/w_guess_mat.jld2"; w_guess=w_guess)
+    jldsave("$G/p_E_guessmat.jld2"; p_E_init=p_E_init)
+    jldsave("$G/Dout_guess_init.jld2"; result_Dout_init=result_Dout_init)
+    jldsave("$G/Yout_guess_init.jld2"; result_Yout_init=result_Yout_init)
+    jldsave("$G/PC_guess_init.jld2"; PC_guess_init=PC_guess_init)
 
-    jldsave("$G/laboralloc_guess.jld2", laboralloc=laboralloc)
-    jldsave("$G/z_mat.jld2", Z=Z)
-    jldsave("$G/z_sec_mat.jld2", Zsec=Zsec)
-    jldsave("$G/wedge_vec.jld2", wedge=wedge)
-    jldsave("$G/priceshifterupdate_vec.jld2", priceshifterupdate=priceshifterupdate)
-    jldsave("$G/fossilsales_guess.jld2", fossilsales=fossilsales)
+    jldsave("$G/laboralloc_guess.jld2"; laboralloc=laboralloc)
+    jldsave("$G/z_mat.jld2"; Z=Z)
+    jldsave("$G/z_sec_mat.jld2"; Zsec=Zsec)
+    jldsave("$G/wedge_vec.jld2"; wedge=wedge)
+    jldsave("$G/priceshifterupdate_vec.jld2"; priceshifterupdate=priceshifterupdate)
+    jldsave("$G/fossilsales_guess.jld2"; fossilsales=fossilsales)
 
     # set initial power output vector
     P_out_init = mrkteq.P_out

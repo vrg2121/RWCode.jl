@@ -122,14 +122,14 @@ function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::
     #end
 
     if config.hoursofstorage == 0
-        jldsave("$G/laboralloc_LR_guess.jld2", laboralloc_LR)
-        jldsave("$G/KR_LR_S_guess.jld2", KR_LR_S)
-        jldsave("$G/KR_LR_W_guess.jld2", KR_LR_W)
-        jldsave("$G/p_E_LR_guess.jld2", p_E_LR)
-        jldsave("$G/w_LR_guess.jld2", w_LR)
-        jldsave("$G/Dout_guess_LR.jld2", result_Dout_LR)
-        jldsave("$G/Yout_guess_LR.jld2", result_Yout_LR)
-        jldsave("$G/PC_guess_LR.jld2", PC_guess_LR)
+        jldsave("$G/laboralloc_LR_guess.jld2"; laboralloc_LR)
+        jldsave("$G/KR_LR_S_guess.jld2"; KR_LR_S)
+        jldsave("$G/KR_LR_W_guess.jld2"; KR_LR_W)
+        jldsave("$G/p_E_LR_guess.jld2"; p_E_LR)
+        jldsave("$G/w_LR_guess.jld2"; w_LR)
+        jldsave("$G/Dout_guess_LR.jld2"; result_Dout_LR)
+        jldsave("$G/Yout_guess_LR.jld2"; result_Yout_LR)
+        jldsave("$G/PC_guess_LR.jld2"; PC_guess_LR)
     end
 
 

@@ -8,7 +8,7 @@ using Ipopt, JuMP, Interpolations
 import Random: Random
 import Plots: plot, plot!
 import DataFrames: DataFrame
-import JLD2: @save
+import JLD2: jldsave
 import SparseArrays: sparse
 
 import ..ModelConfiguration: ModelConfig
@@ -105,7 +105,7 @@ function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::Named
 
     if config.hoursofstorage==0
         #@save "$G/p_F_path_guess_saveDL.jld2" p_F_path_guess
-        jldsave("$G/p_F_path_guess_saveDL.jld2", p_F_path_guess)
+        jldsave("$G/p_F_path_guess_saveDL.jld2"; p_F_path_guess)
     end
 
     return (
