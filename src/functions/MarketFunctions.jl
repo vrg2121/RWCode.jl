@@ -110,6 +110,56 @@ function open_mat_var!(result_Dout_init::Matrix{Matrix{Float64}}, result_Yout_in
     return w_guess, p_E_init, laboralloc, PC_guess_init, p_F_path_guess, wedge, priceshifterupdate, fossilsales
 end
 
+function open_h5_var!(result_Dout_init::Matrix{Matrix{Float64}}, result_Yout_init::Matrix{Matrix{Float64}}, result_Pout_init::Matrix{Matrix{Float64}}, G::String)
+    # opening variables in mat files
+    wf = matopen("$G/w_guess_mat.mat")
+    w_guess = read(wf, "w_guess")
+    close(wf)
+
+    pEf = matopen("$G/p_E_guessmat.mat") 
+    p_E_init = read(pEf, "p_E_init")
+    close(pEf)
+    p_E_init = vec(p_E_init)
+
+    pof = matopen("$G/Pout_guess_init.mat")
+    result_Pout_init .= read(pof, "result_Pout_init")
+    close(pof)
+
+    lf = matopen("$G/laboralloc_guess.mat")
+    laboralloc = read(lf, "laboralloc")
+    close(lf)
+
+    PCf = matopen("$G/PC_guess_init.mat")
+    PC_guess_init = read(PCf, "PC_guess_init")
+    close(PCf)
+
+    dof = matopen("$G/Dout_guess_init.mat")
+    result_Dout_init .= read(dof, "result_Dout_init")
+    close(dof)
+
+    yof = matopen("$G/Yout_guess_init.mat")
+    result_Yout_init .= read(yof, "result_Yout_init")
+    close(yof)
+
+    pff = matopen("$G/p_F_path_guess_saved.mat")
+    p_F_path_guess = read(pff, "p_F_path_guess")
+    close(pff)
+
+    wf = matopen("$G/wedge_vec.mat")
+    wedge = read(wf, "wedge")
+    close(wf)
+
+    psf = matopen("$G/priceshifterupdate_vec.mat")
+    priceshifterupdate = read(psf, "priceshifterupdate")
+    close(psf)
+
+    ff = matopen("$G/fossilsales_guess.mat")
+    fossilsales = read(ff, "fossilsales")
+    close(ff)
+
+    return w_guess, p_E_init, laboralloc, PC_guess_init, p_F_path_guess, wedge, priceshifterupdate, fossilsales
+end
+
 
 function market_setup!(rP_init::Vector, pg_init_s::Matrix, pE_market_init::Vector, 
     wage_init::Vector, params::StructParams, p_E_init::Vector, p_F::Float64, R_LR::Float64, PC_guess_init::Matrix)

@@ -221,21 +221,22 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
     # ---------------------------------------------------------------------------- #
     #                               Grid Improvements                              #
     # ---------------------------------------------------------------------------- #
-    if config.RunImprovement == 1
+    #if config.RunImprovement == 1
         #include("./SteadyStateImp.jl")
         #SI = solve_steadystate_imp()
         #writedata_imp(P, DL, M, SI, config)
-    end
+    #end
 
     # ---------------------------------------------------------------------------- #
     #                                Exogenous Tech                                #
     # ---------------------------------------------------------------------------- #
     if config.RunExog == 1
         config.hoursofstorage = 0
-        for exogindex in 3:-1:1
-            exogindex = 1
+        for exogindex in 3:-1:2
+            # exogindex == 1 does not converge
             println("Solving long run equilibrium with exogenous tech when exog index = $exogindex...")
             SE = SteadyStateExog.solve_steadystate_exog(P, DL, M, config, exogindex, G)
+
 
             println("Solving transitional dynamics with exogenous tech when exog index = $exogindex...")
             TE = solve_transition_exog(P, DL, M, SE, config, exogindex)

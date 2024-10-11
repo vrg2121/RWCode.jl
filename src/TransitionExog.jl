@@ -8,7 +8,6 @@ using Ipopt, JuMP, Interpolations
 import Random: Random
 import Plots: plot, plot!
 import DataFrames: DataFrame
-import JLD2: @save
 import SparseArrays: sparse
 import ..ModelConfiguration: ModelConfig
 
