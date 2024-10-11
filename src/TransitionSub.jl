@@ -8,7 +8,7 @@ using Ipopt, JuMP, Interpolations
 import Random: Random
 import Plots: plot, plot!
 import DataFrames: DataFrame
-import JLD2: @save
+import MAT: matwrite
 import SparseArrays: sparse
 
 # import parameters, data and variables
@@ -127,7 +127,7 @@ plot(1:20, normalized_KR_path_S', label="KR Path S", legend=:topright)
 plot!(1:20, normalized_KR_path_W', label="KR Path W")
 
 if hoursofstorage==0
-    @save "Guess/p_F_path_guess_saved.jld2" p_F_path_guess
+    matwrite("$G/p_F_path_guess_saved.mat", Dict("p_F_path_guess" => p_F_path_guess))
 end
 
 end
