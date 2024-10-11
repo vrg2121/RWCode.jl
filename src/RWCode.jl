@@ -134,6 +134,20 @@ import .TransitionExog: solve_transition_exog
 include("./WriteDataExog.jl")
 import .WriteDataExog: writedata_exog
 
+"""
+    run_rwcode(config::ModelConfig, Data::String, Guesses::String, Results::String)
+
+Takes in user configuration, data, and guesses to run the model. Output is saved in Results file.
+
+## Input
+- `config::ModelConfig`-- struct of user defined model configurations.
+- `Data::String`-- full path to Data folder.
+- `Guesses::String`-- full path to Guesses folder.
+- `Results::String`-- full path to Results folder.
+
+## Output
+CSV files in Results folder. Name and content of files depend on user configuration.
+"""
 
 function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
 
@@ -194,12 +208,6 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
     # ---------------------------------------------------------------------------- #
     #                              Battery Robustness                              #
     # ---------------------------------------------------------------------------- #
-    """
-    If you run config.RunTransition == 1, data will be written using writedata without Subsidy and then with Subsidy.
-    If you run config.RunTransition == 1 && config.RunBatteries == 1, data will be written 
-        using writedata (with subsidy, without subsidy) and then written using writedatabattery.
-    When you run config.RunTransition == 1, should hoursofstorage always be 0?
-    """
     
     if config.RunBatteries == 1
 

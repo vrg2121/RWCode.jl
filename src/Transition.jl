@@ -17,7 +17,28 @@ import ..ModelConfiguration: ModelConfig
 
 export solve_transition
 
+"""
+    solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig, G::String)
 
+Model of the renewable energy transition up to 2040.
+
+## Inputs
+- `P::NamedTuple` -- NamedTuple of parameters. Output of `P = setup_parameters(D, G)`
+- `D::NamedTuple` -- NamedTuple of model data. Output of `DL = load_data(P, D)`
+- `M::NamedTuple` -- NamedTuple of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
+- `S::NamedTuple` -- NamedTuple of steady state equilibrium. Output of `S = solve_steadystate(P, DL, M, config, Guesses)`
+- `Subsidy::Int` -- Whether or not to calculate transition with a renewable energy subsidy.
+- `config::ModelConfig` -- struct of user defined model configurations. `config = ModelConfig()`
+- `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
+
+## Outputs
+Named tuple containing path of renewable energy transition across specific regions and the world; share of renewables in the US; wage changes,
+    capital changes, electricity changes and fossil fuel changes until 2040. Saves price of fuel when hours of battery 
+    storage is 0 in Guesses.
+
+## Notes
+Calculated with some variations when RunTransition==1, RunBatteries==1, RunExog==1, RunCurtailment==1. Not calculated when RunImprovement==1.
+"""
 function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig, G::String)
     # set st 
     st = zeros(P.params.J, P.T + 1)

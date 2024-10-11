@@ -8,6 +8,29 @@ export setup_parameters
 # import functions
 using ..ParamsFunctions
 
+"""
+    setup_parameters(Data::String, Guesses::String)
+
+Set parameters for the model run.
+
+## Inputs
+- `Data` -- full path to Data folder.
+- `Guesses` -- full path to Guesses folder.
+
+## Output
+Model parameters wrapped in a named tuple. The named tuple 
+    contains constants and structs like `params`.
+
+## Notes
+Descriptions for each parameter are in the submodule `ParamsFunctions.jl` comments.
+
+## Example
+```julia-repl
+julia> D = "path/to/Data"
+julia> G = "path/to/Guesses"
+julia> P = setup_parameters(D, G) # the named tuple is saved in variable P
+```
+"""
 function setup_parameters(D::String, G::String)
     # preallocate parameters
     thetaS = Vector{Float64}(undef, 2531)

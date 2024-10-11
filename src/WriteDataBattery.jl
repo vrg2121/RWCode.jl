@@ -7,6 +7,27 @@ import ..ModelConfiguration: ModelConfig
 # import data from model
 export writedata_battery
 
+"""
+    writedata_battery(P::NamedTuple, M::NamedTuple, S::NamedTuple, T::NamedTuple, config::ModelConfig, R::String)
+
+Writes data outputs to .csv files for analysis. All outputs are in the Results folder
+
+## Inputs
+- `P::NamedTuple` -- NamedTuple of parameters. Output of `P = setup_parameters(D, G)`
+- `D::NamedTuple` -- NamedTuple of model data. Output of `DL = load_data(P, D)`
+- `M::NamedTuple` -- NamedTuple of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
+- `S::NamedTuple` -- NamedTuple of steady state equilibrium. Output of `S = solve_steadystate(P, DL, M, config, Guesses)`
+- `T::NamedTuple` -- NamedTuple of transition outputs. Output of `T = solve_transition(P, DL, M, S, Subsidy, config, Guesses)`
+- `config::ModelConfig` -- struct of user defined model configurations. `config = ModelConfig()`
+- `R::String` -- path to Results folder. `R = "path/to/Results"`
+
+## Outputs
+Model results for capital and battery price falls, renewable shares, US GDP outcomes, capital investment results,
+    price results, fossil fuel usage and prices, welfare changes in 2040. Clearly labeled .csv files in Results.
+
+## Notes
+This function writes data when RunBattery==1 or RunCurtailment==1.
+"""
 function writedata_battery(P::NamedTuple, M::NamedTuple, S::NamedTuple, T::NamedTuple, config::ModelConfig, R::String)
 
     curtailmentswitch = P.curtailmentswitch

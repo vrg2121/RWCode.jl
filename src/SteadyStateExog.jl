@@ -7,7 +7,25 @@ import ..ModelConfiguration: ModelConfig
 # export variables
 export solve_steadystate_exog
 
+"""
+    solve_steadystate_exog(P::NamedTuple, DL::NamedTuple, M::NamedTuple, config::ModelConfig, exogindex::Int64, G::String)
 
+Solve the steadystate equilibrium for wind and solar in the energy grid.
+
+## Inputs
+- `P::NamedTuple` -- NamedTuple of parameters. Output of `P = setup_parameters(D, G)`
+- `DL::NamedTuple` -- NamedTuple of model data. Output of `DL = load_data(P, D)`
+- `M::NamedTuple` -- NamedTuple of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
+- `exogindex::Int64` -- The exogenous tech index: 1, 2, 3
+- `config::ModelConfig` -- struct of user defined model configurations.
+- `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
+
+## Outputs
+Named tuple containing steadystate with exogenous techs levels of GDP, wages, labor, capital, electricity, fossil fuels, etc.
+
+## Notes
+Calculated for only when RunExog==1.
+"""
 function solve_steadystate_exog(P::NamedTuple, DL::NamedTuple, M::NamedTuple, config::ModelConfig, exogindex::Int64, G::String)
     # ---------------------------------------------------------------------------- #
     #                             Step 0: Initial Guess                            #

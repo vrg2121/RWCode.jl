@@ -4,6 +4,23 @@ using Printf
 using CSV
 using DataFrames
 
+"""
+    writedata_exog(TE::NamedTuple, exogindex::Int, R::String)
+
+Writes data outputs to .csv files for analysis. All outputs are in the Results folder
+
+## Inputs
+- `TE::NamedTuple` -- NamedTuple of transition solved with exogenous tech outputs. 
+    Output of `T = solve_transition(P, DL, M, S, Subsidy, config, Guesses)`
+- `exogindex::Int64` -- The exogenous tech index: 1, 2, 3
+- `R::String` -- path to Results folder. `R = "path/to/Results"`
+
+## Outputs
+Model results (with and without subsidy) for renewable shares when there is exogenous technology.
+
+## Notes
+This function writes data only when RunExog==1.
+"""
 function writedata_exog(TE::NamedTuple, exogindex::Int, R::String)
     # Constructing a label string
     labeller = "exog" * @sprintf("%02d", exogindex)

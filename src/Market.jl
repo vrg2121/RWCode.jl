@@ -19,6 +19,21 @@ import SparseArrays: sparse
 import MAT: matwrite
 import DataFrames: DataFrame
 
+"""
+    solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::String)
+
+Solve the initial market equilibrium using parameters, data and guesses. The initial market equilibrium is 
+    solved identically for all model configurations.
+
+## Inputs
+- `P::NamedTuple` -- NamedTuple containing all model parameters. Output of `P = setup_parameters(D, G)`
+- `DL::NamedTuple` -- NamedTuple containing all model data. Output of `DL = load_data(P, Data)`
+- `config::ModelConfig` -- model configuration set by the user. Output of `config = ModelConfig()` 
+- `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
+
+## Outputs
+Outputs of the market equilibrium and updates to wages, labor, prices, etc.
+"""
 function solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::String)
 # ---------------------------------------------------------------------------- #
 #                           Solve Market Equilibrium                           #
