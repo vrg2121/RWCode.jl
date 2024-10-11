@@ -104,7 +104,7 @@ function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::Named
     p_F_path_guess = transeq.p_F_path_guess
 
     if config.hoursofstorage==0
-        matwrite("$G/p_F_path_guess_saved.mat", p_F_path_guess)
+        matwrite("$G/p_F_path_guess_saved.mat", Dict("p_F_path_guess" => p_F_path_guess))
     end
 
     return (

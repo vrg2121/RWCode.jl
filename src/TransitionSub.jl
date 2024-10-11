@@ -127,7 +127,7 @@ plot(1:20, normalized_KR_path_S', label="KR Path S", legend=:topright)
 plot!(1:20, normalized_KR_path_W', label="KR Path W")
 
 if config.hoursofstorage==0
-    matwrite("$G/p_F_path_guess_saved.mat", p_F_path_guess)    
+    matwrite("$G/p_F_path_guess_saved.mat", Dict("p_F_path_guess" => p_F_path_guess))
 end
 
 end
