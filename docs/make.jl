@@ -1,4 +1,11 @@
 push!(LOAD_PATH,"..")
 using Documenter, RWCode
 
-makedocs(sitename="RWCode.jl")
+makedocs(
+    modules = [RWCode],
+    sitename="RWCode.jl",
+    authors="Conor Walsh and Victoria Garcia",
+    pages=["Home" => "index.md"]
+)
+
+deploydocs(repo = "github.com/vrg2121/RWCode.jl.git")
