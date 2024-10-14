@@ -3,7 +3,7 @@ name: Documentation
 on:
   push:
     branches:
-      - gh-pages # update to match your development branch (master, main, dev, trunk, ...)
+      - gh-pages
     tags: '*'
   pull_request:
 
@@ -25,5 +25,5 @@ jobs:
         run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
       - name: Build and deploy
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: julia --project=docs/ docs/make.jl
