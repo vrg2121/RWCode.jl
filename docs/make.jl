@@ -8,4 +8,4 @@ makedocs(
     pages=["Home" => "index.md"]
 )
 
-deploydocs(repo = "github.com/vrg2121/RWCode.jl.git")
+deploydocs(repo = "github.com/vrg2121/RWCode.jl")
