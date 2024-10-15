@@ -2,8 +2,14 @@ push!(LOAD_PATH, "../src/")
 
 using Documenter, RWCode
 
-makedocs(sitename = "RWCode.jl Documentation")
+makedocs(sitename = "RWCode.jl Documentation",
+    format = Documenter.HTML(),
+    source = "src/",
+    modules = [RWCode]
+)
 
-deplydocs(
-    repo = "github.com/vrg2121/RWCode.jl.git"
+deploydocs(
+    repo = "github.com/vrg2121/RWCode.jl.git",
+    target = "build",
+    branch = "gh-pages"
 )

@@ -10,10 +10,6 @@ Package developed by Victoria Garcia.
 ```
 
 ## Function Documentation
-```@docs
-ModelConfig()
-```
-
-```@docs
-run_rwcode(config, D, G, R)
+```@autodocs
+Modules = [RWCode]
 ```
