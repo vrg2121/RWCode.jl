@@ -16,7 +16,7 @@ julia> ]
 (@v1.10) pkg> activate RWCode.jl
 Activating project at `~/RWCode.jl`
 
-(RWCodeJulia) pkg> instantiate
+(RWCode) pkg> instantiate
 
 # for a detailed explanation see: https://pkgdocs.julialang.org/v1/environments/#Using-someone-else's-project
 
@@ -218,14 +218,6 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
         end
     end
 
-    # ---------------------------------------------------------------------------- #
-    #                               Grid Improvements                              #
-    # ---------------------------------------------------------------------------- #
-    #if config.RunImprovement == 1
-        #include("./SteadyStateImp.jl")
-        #SI = solve_steadystate_imp()
-        #writedata_imp(P, DL, M, SI, config)
-    #end
 
     # ---------------------------------------------------------------------------- #
     #                                Exogenous Tech                                #

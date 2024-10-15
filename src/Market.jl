@@ -21,6 +21,21 @@ import SparseArrays: sparse
 import MAT: matwrite
 import DataFrames: DataFrame
 
+"""
+    solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::String)
+
+Solve the initial market equilibrium using parameters, data and guesses. The initial market equilibrium is 
+    solved identically for all model configurations.
+
+## Inputs
+- `P::NamedTuple` -- NamedTuple containing all model parameters. Output of `P = setup_parameters(D, G)`
+- `DL::NamedTuple` -- NamedTuple containing all model data. Output of `DL = load_data(P, Data)`
+- `config::ModelConfig` -- model configuration set by the user. Output of `config = ModelConfig()` 
+- `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
+
+## Outputs
+Outputs of the market equilibrium and updates to wages, labor, prices, etc.
+"""
 function solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::String)
 # ---------------------------------------------------------------------------- #
 #                           Solve Market Equilibrium                           #
@@ -56,20 +71,6 @@ function solve_market(P::NamedTuple, DL::NamedTuple, config::ModelConfig, G::Str
     matwrite("$G/wedge_vec.mat", Dict("wedge" => wedge))
     matwrite("$G/priceshifterupdate_vec.mat", Dict("priceshifterupdate" => priceshifterupdate))
     matwrite("$G/fossilsales_guess.mat", Dict("fossilsales" => fossilsales))
-    
-    # Save variables
-    #jldsave("$G/w_guess_mat.jld2"; w_guess=w_guess)
-    #jldsave("$G/p_E_guessmat.jld2"; p_E_init=p_E_init)
-    #jldsave("$G/Dout_guess_init.jld2"; result_Dout_init=result_Dout_init)
-    #jldsave("$G/Yout_guess_init.jld2"; result_Yout_init=result_Yout_init)
-    #jldsave("$G/PC_guess_init.jld2"; PC_guess_init=PC_guess_init)
-
-    #jldsave("$G/laboralloc_guess.jld2"; laboralloc=laboralloc)
-    #jldsave("$G/z_mat.jld2"; Z=Z)
-    #jldsave("$G/z_sec_mat.jld2"; Zsec=Zsec)
-    #jldsave("$G/wedge_vec.jld2"; wedge=wedge)
-    #jldsave("$G/priceshifterupdate_vec.jld2"; priceshifterupdate=priceshifterupdate)
-    #jldsave("$G/fossilsales_guess.jld2"; fossilsales=fossilsales)
 
     # set initial power output vector
     P_out_init = mrkteq.P_out
