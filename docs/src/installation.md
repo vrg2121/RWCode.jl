@@ -89,10 +89,10 @@ All of the outputs will be labeled and stored as .csv files in the Results file 
 Return to the local Terminal.
 
 ```bash
-docker ps -a
+docker ps -a    # this command will print the container ID in the first column.
 docker cp <containerID>:/home/jl/Results </host/path/target>
 ```
-**Finding the containerID**
+
 
 Remember to change `</host/path/target>` to the local path you want to copy the data into.
 
