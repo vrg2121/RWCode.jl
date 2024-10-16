@@ -113,7 +113,7 @@ mutable struct ModelConfig
         hoursofstorage = prompt_for_int("Enter hoursofstorage (default=0):", 0)
         hoursvec = prompt_for_vector("Enter hoursvec (comma-separated, default = 2,4,6):", [2.0, 4.0, 6.0])
         
-        new(RunTransition, RunBatteries, RunImprovement, RunExog, RunCurtailment, Transiter, Initialprod, hoursofstorage, hoursvec)
+        new(RunTransition, RunBatteries, RunExog, RunCurtailment, Transiter, Initialprod, hoursofstorage, hoursvec)
     end
     
 end

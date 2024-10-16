@@ -49,23 +49,24 @@ Calculating a 3D Interpolation (MATLAB interp3()) using Interpolations.jl:
   this by comparing graphs of the interpolation grids between MATLAB and Julia.
 """
 
+
 """
     solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::ModelConfig, G::String)
 
-Solve the steadystate equilibrium for wind and solar in the energy grid.
+Solve the steady-state equilibrium for wind and solar in the energy grid.
 
-## Inputs
-- `P::NamedTuple` -- NamedTuple of parameters. Output of `P = setup_parameters(D, G)`
-- `DL::NamedTuple` -- NamedTuple of model data. Output of `DL = load_data(P, D)`
-- `M::NamedTuple` -- NamedTuple of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
-- `config::ModelConfig` -- struct of user defined model configurations.
-- `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
+# Arguments
+- `P::NamedTuple`: NamedTuple of parameters, output of `P = setup_parameters(D, G)`
+- `D::NamedTuple`: NamedTuple of model data, output of `DL = load_data(P, D)`
+- `M::NamedTuple`: NamedTuple of market equilibrium, output of `M = solve_market(P, DL, config, G)`
+- `config::ModelConfig`: User defined model configurations.
+- `G::String`: Path to the Guesses folder, e.g., `G = "path/to/Guesses"`
 
-## Outputs
-Named tuple containing steadystate levels of GDP, wages, labor, capital, electricity, fossil fuels, etc.
-    Updates some guesses when hours of storage = 0.
-## Notes
-Calculated for all configurations of the model.
+# Returns
+NamedTuple containing steady-state levels of GDP, wages, labor, capital, electricity, fossil fuels, etc.
+
+# Notes
+Updates some guesses when hours of storage = 0.
 """
 function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::ModelConfig, G::String)
 
