@@ -4,8 +4,7 @@ using Documenter, RWCode
 
 makedocs(sitename = "RWCode.jl Documentation",
     format = Documenter.HTML(),
-    source = "src/",
-    modules = [RWCode]
+    source = "src/"
 )
 
 deploydocs(
