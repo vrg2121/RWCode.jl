@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate("..")
+Pkg.activate(".")
 push!(LOAD_PATH,"../src/")
 using Documenter, RWCode
 
