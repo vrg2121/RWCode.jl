@@ -1,6 +1,6 @@
-using Pkg
-Pkg.activate(".")
-push!(LOAD_PATH,"../src/")
+#using Pkg
+#Pkg.activate("..")
+#push!(LOAD_PATH,"../src/")
 using Documenter, RWCode
 
 makedocs(sitename = "RWCode.jl",
