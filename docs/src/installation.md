@@ -1,104 +1,150 @@
 # Installation
-RWCode is a model build in Julia that has also been developed to run on the cloud. The code is designed to efficiently parallelize using hyperthreading. It is recommended that you run the model on the cloud or a cluster. Most of the models take less than a day to run on a laptop, but take up significant storage/CPU.
+RWCode is a model of the global energy grid that has been developed to run on personal computers and the cloud. The code is designed to efficiently parallelize using hyperthreading. It is recommended that you run the model on the cloud or a cluster. Most of the models take less than a day to run on a laptop, but take up significant storage/CPU.
 
-# Standard installation
+#### Table of Contents
+```@contents
+Pages = ["installation.md"]
+Depth = 2:3
+```
 
-## Downloading the data
+## Installation for PC and GIT
+This installation process assumes that [Julia](https://julialang.org/downloads/) has been downloaded and can be accessed from the command line interface (CLI) or an IDE ([VS Code](https://code.visualstudio.com/docs/languages/julia), [Jupyter Notebooks](https://github.com/JuliaLang/IJulia.jl)). An IDE is not necessary, as everything can be run from the CLI.
+
+### Downloading the data
 Due to size constraints, the data for the model is contained in a separate github account.
 
-1. Navigate to the data. The data can be found at [RWCodeData](https://github.com/vrg2121/RWCodeData).
+1. Navigate to the data at [RWCodeData](https://github.com/vrg2121/RWCodeData).
 2. Above the list of files, click <> **Code**.
 3. Click "Download Zip."
 
-If you are running the code on a laptop or desktop, it is recommneded that you unzip these files into an overarching folder for the project.
+If you are running the code on a laptop or desktop, it is recommended that you unzip these files into an overarching folder for the project. See the recommended file structure below.
+
+### Initialize a Results Folder
+In the same directory as the RWCodeData download, create an empty `Results` folder. All data outputs will be saved to this folder.
+
+### Downloading the package
+RWCode.jl is not registered and must be pulled from github. It is recommended that you pull it into the same folder as the RWCodeData.
+
+Install Julia from the official binaries [here](https://julialang.org/downloads/#install_julia).
 
 
-## Downloading the package
-RWCode.jl is not registered and must be pulled from github.
+Check that the appropriate version of Julia is installed
 
 ```julia
-] add https://github.com/vrg2121/RWCode.jl
+julia> VERSION
+v"1.10.5"
 ```
 
-## Running with Docker
-If you do not want to install Julia, start an IDE, download the data and package, then you can use the docker image. The docker image can be used on a personal computer or on the Cloud. 
+!!! tip
+	If the version does not start with `1.10`, run the following commands in the CLI:
+	```bash
+	$ juliaup add 1.10.5
+	$ julia +1.10
+	```
+
+
+Navigate to the path where RWCode data is stored
+
+```bash
+cd PATH/TO/RWCODEDATA
+julia +1.10
+```
+
+!!! tip
+	To exit the Julia REPL in the CLI, just use command `exit()` in the Julia REPL.
+
+
+Pull the RWCode.jl package from GIT
+
+```julia
+julia> ] 
+(@v1.10) pkg> add https://github.com/vrg2121/RWCode.jl
+```
+
+!!! tip "Recommended File Structure"
+	```
+	RWCodeLocal/
+	├── Data/                   # Data downloaded from RWCodeData
+		└── ...                
+	├── Guesses/                # Data downloaded from RWCodeData
+		└── ...
+	├── Results/                # Empty folder for saving output results
+	└── RWCode/                 # Code from RWCode.jl
+		└── src/
+			└── functions/
+			└── ...     
+	```
+
+### Set Up Multithreading
+Check the number of threads available.
+
+```julia
+julia> Threads.nthreads()
+1
+```
+
+- This is too few threads to run the model efficiently. Need at least 12 threads for the model to run efficiently. More threads will speed up the transition solves.
+
+Set up number of threads available on personal computer.
+- Most consumer CPUs support two threads per core. So if your computer has 8 CPUs, you can call up to 16 threads. It is recommended to use at least 12 threads.
+
+- To initiate more threads, execute the following in the terminal:
+
+```bash
+julia +1.10 -t 16
+```
+
+- You can double check the number of threads available by using the `Threads.nthreads()` command again.
+
+!!! note "Threads in VS Code"
+	Refer to [this discourse](https://discourse.julialang.org/t/julia-num-threads-in-vs-code-windows-10-wsl/28794/6) for setting up the number of threads in Julia using the VS Code IDE.
+
+#### Follow the [Tutorial: Run the Model](@ref).
+
+## Installation with Docker
+If you do not want to install Julia, download a compatible IDE, download the data and package, then you can use the docker image. The docker image can be used on a personal computer or on the Cloud. The docker image contains the requisite version of Julia
 
 ### Running with Docker: Personal Computer
-To run RWCode via docker, first set up docker for your computer. See the [dockerdocs](https://docs.docker.com/desktop/?_gl=1*1y6i8pd*_gcl_au*MjExMzU5MjMxMi4xNzI2NzYwMjEy*_ga*MTk3MTkwNDMwOC4xNzI2NzYwMjEy*_ga_XJWPQMJYHQ*MTcyOTA5MjkzMC4xNi4xLjE3MjkwOTI5MzAuNjAuMC4w) for details for each type of computer. The docker image contains all of the data, package code and Julia v.1.10 necessary for running the code.
+To run RWCode via docker, first set up docker for your computer. See the [dockerdocs](https://docs.docker.com/desktop/?_gl=1*1y6i8pd*_gcl_au*MjExMzU5MjMxMi4xNzI2NzYwMjEy*_ga*MTk3MTkwNDMwOC4xNzI2NzYwMjEy*_ga_XJWPQMJYHQ*MTcyOTA5MjkzMC4xNi4xLjE3MjkwOTI5MzAuNjAuMC4w) for installation intructions for each OS. The docker image contains all of the data, package code and Julia v1.10 necessary for running the code.
 
 Once, docker is started on your computer, execute the following command in your terminal:
+
 ```bash
-docker run -it vrg2121/rwcode:dev /bin/bash
+docker run -it vrg2121/rwcode /bin/bash
 ```
 
-Once the docker image is running, follow these commmands to initiate the model run:
+#### Initiate the model run:
 
-1. Navigate to the Julia REPL
+Navigate to the Julia REPL with the desired number of threads
+
 ```bash
-jl@f416a6d0e29c:~/RWCode$ julia
+jl@f416a6d0e29c:~/RWCode$ julia -t 12
 ```
+!!! info "Number of Threads"
+	There are 2 threads on each CPU available. It is recommended that you run the program with at least 12 threads.
 
-2. Initiate the package
+Initiate the package
+
 ```julia
 julia> ]
+
 (@v1.10) pkg> activate .
-  Activating project at `~/RWCode`
+Activating project at `~/RWCode`
 
 (RWCode) pkg>
 julia> using RWCode
 Precompiling RWCode
-    Progress [============>                 ] x/118
+	Progress [============>                 ] x/120
 ```
 
-3. Set up vaariable paths to data, guesses and results
-```julia
-julia> D = "/home/jl/Data"
-julia> G = "/home/jl/Guesses"
-julia> R = "/home/jl/Results"
-```
-Note that the location of the Data, Guesses and Results files are pre-set when using the Docker image.
+#### Follow the [Tutorial: Run the Model](@ref)
 
-4. Configure the model
-```julia
-julia> config = ModelConfig()
-Enter RunTransition (0 or 1, default = 1):
-
-Enter RunBatteries (0 or 1, default=0):
-
-Enter RunExog (0 or 1, default=0):
-
-Enter RunCurtailment (0 or 1, default=0):
-
-Enter the Number of Transition Iterations (recommend 0-100 iterations, default=2):
-
-Enter Initial Production (default = 100):
-
-Enter hoursofstorage (default=0):
-
-Enter hoursvec (comma-separated, default = 2,4,6):
-```
-In this example, all of the values are automatically set to the default. For more information about the model configurations see this page.
-
-5. Run the model
-```julia
-julia> run_rwcode(config, D, G, R)
-```
-All of the outputs will be labeled and stored as .csv files in the Results file at /home/jl/Results.
-
-6. Copy the results from container to local
-Return to the local Terminal.
-
-```bash
-docker ps -a    # this command will print the container ID in the first column.
-docker cp <containerID>:/home/jl/Results </host/path/target>
-```
-
-
-Remember to change `</host/path/target>` to the local path you want to copy the data into.
-
-### Running with Docker: Cloud
+## Installation with Docker on the Cloud
 There are various cloud interfaces that can be used to run this model. In fact, Julia has it's own supercomputing provider, [JuliaHub](https://juliahub.com/). 
 
-While JuliaHub does provide a quick start up and smooth IDE, other services like AWS EC2 are the focus of this tutorial due to lower cost. This tutorial assumes you have already set up an AWS EC2 account. 
+AWS EC2 is the focus of this tutorial. This tutorial assumes you have already set up an [AWS account](https://aws.amazon.com/resources/create-account/) and launched an [EC2 instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html).
 
-#### AWS: EC2
+### AWS: EC2
+1. Install Docker on Your EC2 Instance
+2. Pull the docker image from DockerHub
+3. Run the model.
