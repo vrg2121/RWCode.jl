@@ -1079,7 +1079,7 @@ deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[deps.RWCode]]
-deps = ["AmplNLWriter", "BenchmarkTools", "CSV", "Compat", "DataFrames", "DelimitedFiles", "ForwardDiff", "HDF5", "Interpolations", "Ipopt", "JET", "JLD2", "JuMP", "LazyGrids", "LinearAlgebra", "MAT", "Parameters", "Plots", "Printf", "Profile", "Random", "Revise", "SCIP", "ScatteredInterpolation", "SparseArrays", "StaticArrays", "Statistics", "StructArrays", "Tables", "UnPack", "UpdateJulia"]
+deps = ["AmplNLWriter", "BenchmarkTools", "CSV", "Compat", "DataFrames", "DelimitedFiles", "Documenter", "ForwardDiff", "HDF5", "Interpolations", "Ipopt", "JET", "JLD2", "JuMP", "LazyGrids", "LinearAlgebra", "MAT", "Parameters", "Plots", "Printf", "Profile", "Random", "Revise", "SCIP", "ScatteredInterpolation", "SparseArrays", "StaticArrays", "Statistics", "StructArrays", "Tables", "UnPack", "UpdateJulia"]
 path = ".."
 uuid = "8117afeb-3e6a-4578-bf38-91d6611afab8"
 version = "1.0.0-DEV"
