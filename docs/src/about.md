@@ -1,7 +1,7 @@
 # Authors
 The original MATLAB model was developed by [Conor Walsh](https://www.conor-walsh.com/) and [Costas Arkolakis](https://arkolakis.com/).
 
-The Julia package was written by [Victoria Garcia](vrg2121@columbia.edu).
+The Julia package was written by Victoria Garcia.
 
 # Citation
 If you use this model for your research, please cite the paper [Clean Growth](https://www.nber.org/papers/w31615):
