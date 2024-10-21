@@ -5,7 +5,7 @@ import MAT: matopen
 import Statistics: mean
 import ..DataLoadsFunc: StructGsupply, StructRWParams
 import ..ParamsFunctions: StructParams
-using JuMP, Ipopt, JLD2
+using JuMP, Ipopt
 using ..RegionModel, ..MarketEquilibrium
 
 import ..ModelConfiguration: ModelConfig
@@ -13,7 +13,6 @@ export ss_second_loop, grad_f, new_obj2, new_grad2, ss_load_mat, ss_update_param
        new_obj_f, new_grad_f, set_battery, update_battery, ss_optimize_region!, solve_power_output_exog, 
        ss_optimize_region_imp!
 
-using Profile
 
 function ss_optimize_region!(result_price_LR::Vector, result_Dout_LR::Matrix, result_Yout_LR::Matrix, result_YFout_LR::Vector, Lossfac_LR::Matrix,
         pg_LR_s::Matrix, majorregions::DataFrame, Linecounts::DataFrame, RWParams::StructRWParams, laboralloc_LR::Matrix, Lsector::Matrix, params::StructParams, 
@@ -180,16 +179,7 @@ function solve_power_output_exog(RWParams::StructRWParams, params::StructParams,
     projectionssolar::Matrix, projectionswind::Matrix, config::ModelConfig, exogindex::Int, 
     p_KR_init_S::Float64, p_KR_init_W::Float64, kappa::Int, G::String)
 
-    #laboralloc_LR, KR_LR_S, KR_LR_W, p_E_LR, w_LR, result_Dout_LR, result_Yout_LR, PC_guess_LR = ss_load_mat(G);
-    laboralloc_LR = load("$G/laboralloc_LR_guess.jld2")["laboralloc_LR"]
-    KR_LR_S = load("$G/KR_LR_S_guess.jld2")["KR_LR_S"]
-    KR_LR_W = load("$G/KR_LR_W_guess.jld2")["KR_LR_W"]
-    p_E_LR = load("$G/p_E_LR_guess.jld2")["p_E_LR"]
-    w_LR = load("$G/w_LR_guess.jld2")["w_LR"]
-    result_Dout_LR = load("$G/Dout_guess_LR.jld2")["result_Dout_LR"]
-    result_Yout_LR = load("$G/Yout_guess_LR.jld2")["result_Yout_LR"]
-    PC_guess_LR = load("$G/PC_guess_LR.jld2")["PC_guess_LR"]
-
+    laboralloc_LR, KR_LR_S, KR_LR_W, p_E_LR, w_LR, result_Dout_LR, result_Yout_LR, PC_guess_LR = ss_load_mat(G);
 
     global laboralloc_LR
     global KR_LR_S

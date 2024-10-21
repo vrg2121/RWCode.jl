@@ -4,7 +4,6 @@ module SteadyState
 using ..SteadyStateFunctions, ..DataAdjustments, ..MarketEquilibrium
  
 import MAT: matwrite
-import Plots: scatter
 import Interpolations: interpolate, Gridded, Linear
 
 # import parameters, data and variables
@@ -157,7 +156,6 @@ function solve_steadystate(P::NamedTuple, D::NamedTuple, M::NamedTuple, config::
 
     # Get changes in manufacturing share
     comparativeadvantagechange = M.laboralloc_init ./ sseq.laboralloc_LR
-    scatter(log.(P.params.L[P.majorregions.rowid2[1]:P.majorregions.rowid[1]]), sseq.result_price_LR[1])
 
     w_real_LR = sseq.w_LR ./ sseq.PC_guess_LR
     GDP_ind_LR = (sseq.w_LR .* P.params.L .+ sseq.p_E_LR .* sseq.D_LR .+ sseq.rP_LR .* sseq.KP_LR .+ sseq.p_F_LR .* fusage_ind_LR) ./ sseq.PC_guess_LR

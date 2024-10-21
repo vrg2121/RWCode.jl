@@ -15,9 +15,6 @@ import ..ModelConfiguration: ModelConfig
 using JuMP, Ipopt
 import Random: Random
 import LinearAlgebra: I
-import SparseArrays: sparse
-#import JLD2: jldsave
-#import HDF5: create_group, create_dataset
 import MAT: matwrite
 import DataFrames: DataFrame
 

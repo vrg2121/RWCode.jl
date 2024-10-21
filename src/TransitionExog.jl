@@ -6,7 +6,6 @@ using ..DataAdjustments, ..TransitionExogFunc, ..MarketEquilibrium
 # load packages
 using Ipopt, JuMP, Interpolations
 import Random: Random
-import Plots: plot, plot!
 import DataFrames: DataFrame
 import SparseArrays: sparse
 import ..ModelConfiguration: ModelConfig

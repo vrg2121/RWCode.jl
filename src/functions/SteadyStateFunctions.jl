@@ -12,7 +12,6 @@ import ..ModelConfiguration: ModelConfig
 export ss_second_loop, grad_f, new_obj2, new_grad2, ss_load_mat, ss_update_params!, 
        new_obj_f, new_grad_f, set_battery, update_battery, ss_optimize_region!, solve_power_output, ss_optimize_region_imp!
 
-using Profile
 
 function ss_optimize_region!(result_price_LR::Vector, result_Dout_LR::Matrix, result_Yout_LR::Matrix, result_YFout_LR::Vector, Lossfac_LR::Matrix,
         pg_LR_s::Matrix, majorregions::DataFrame, Linecounts::DataFrame, RWParams, laboralloc_LR::Matrix, Lsector::Matrix, params, w_LR::Matrix, 

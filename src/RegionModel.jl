@@ -6,7 +6,7 @@ using JuMP, Ipopt
 import DataFrames: DataFrame
 import Random: Random
 import LinearAlgebra: I
-import SparseArrays: sparse
+#import SparseArrays: sparse
 import ..DataLoadsFunc: StructRWParams
 import ..ParamsFunctions: StructParams
 

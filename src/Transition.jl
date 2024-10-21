@@ -6,10 +6,8 @@ using ..DataAdjustments, ..TransitionFunctions, ..MarketEquilibrium
 # load packages
 using Ipopt, JuMP, Interpolations
 import Random: Random
-import Plots: plot, plot!
 import DataFrames: DataFrame
 import MAT: matwrite
-import SparseArrays: sparse
 
 import ..ModelConfiguration: ModelConfig
 
