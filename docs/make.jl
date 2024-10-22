@@ -16,5 +16,6 @@ makedocs(sitename = "RWCode.jl",
 )
 
 deploydocs(
-    repo = "github.com/vrg2121/RWCode.jl.git"
+    repo = "github.com/vrg2121/RWCode.jl.git",
+    version = nothing
 )
