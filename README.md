@@ -1,3 +1,3 @@
 # RWCodeJulia
 
-[![Build Status](https://github.com/vrg2121/RWCodeJulia.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/vrg2121/RWCodeJulia.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+See the documentation [here](https://vrg2121.github.io/RWCode.jl/) for details about the package.
