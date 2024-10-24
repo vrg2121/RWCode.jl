@@ -187,8 +187,8 @@ function transition_electricity_other_countries!(result_price_path::Matrix, resu
     linconscount::Int, pg_path_s::Array, p_F_path_guess::Transpose, p_E_path_guess::Matrix{Float64},
     kappa, KR_path_S::Matrix{Float64}, KR_path_W::Matrix{Float64}, KF_path::Matrix{Float64}, capT::Int, regionParams::StructRWParams)
                                         # Other countries
-    Threads.@threads for kk=3:(params.N - 1)
-        for t = 1:capT
+    for kk=3:(params.N - 1)
+        Threads.@threads for t = 1:capT
             local l_guess, LB, UB, guess, power, shifter, KFshifter, KRshifter, n, mid, p_F_in = data_set_up_transition(t, kk, majorregions, Linecounts, RWParams, laboralloc_path, Lsectorpath_guess, params,
             w_path_guess, rP_path, pg_path_s, p_E_path_guess, kappa, regionParams, KF_path, p_F_path_guess, 
             linconscount, KR_path_S, KR_path_W)
