@@ -8,7 +8,7 @@ Depth = 2:3
 ```
 
 
-## Quick Start using Git
+## Using Git and PC
 Download data from [RWCodeData](https://github.com/vrg2121/RWCodeData) to RWCodeLocal directory.
 
 !!! tip "Recommended File Structure"
@@ -85,7 +85,7 @@ julia> run_rwcode(config, D, G, R)
 ```
 
 
-## Quick Start using Docker
+## Using Docker
 Retrieve the docker image and run interactively:
     
 ```bash
@@ -129,7 +129,7 @@ Run the model:
 julia> run_rwcode(config, D, G, R)
 ```
 
-## Quick Start using Cloud: AWS EC2
+## Using Cloud: AWS EC2 with Docker
 Initialize an EC2 instance with at least 8 CPUs.
 
 Load Docker onto the EC2 instance.

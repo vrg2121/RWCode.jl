@@ -18,3 +18,6 @@ If you are unfamilar with Julia, Docker and/or AWS EC2, it is recommended that y
 !!! info "When to Use Docker"
     Using the Docker installation is recommended for quickly setting up and running the model. If you want to deeply explore the code behind the package functions, use the Git installation guide.
 
+## Data for the Model
+Download the data from [RWCodeData](https://github.com/vrg2121/RWCodeData) git repository.
+
