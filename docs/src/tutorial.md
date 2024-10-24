@@ -8,7 +8,7 @@ Pages = ["tutorial.md"]
 Depth = 2:3
 ```
 
-## PC and Git
+## Tutorial for PC and Git
 Before running the model, check that the following are complete from the installation:
 
 1. Data and Guesses and the RWCode Repository have been downloaded.
@@ -60,7 +60,7 @@ julia> run_rwcode(config, D, G, R)
 ```
 
 
-## Docker
+## Tutorial for Docker
 1. There are 12+ threads in the Julia session.
 
 Set up variable paths to data, guesses and results:

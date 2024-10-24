@@ -5,6 +5,7 @@ This model has various configurations that the user can set using the function:
 julia> config = ModelConfig()
 ```
 
+## Input
 This function guides the user through creating a mutable struct with the model configurations. The outputs for this function should be stored in a variable, e.g. `config = ModelConfig()`. 
 
   * `RunTransition`: Binary Input, i.e.`(1, 0)`

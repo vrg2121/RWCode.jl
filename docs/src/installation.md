@@ -7,7 +7,7 @@ Pages = ["installation.md"]
 Depth = 2:3
 ```
 
-## Installation for PC and Git
+## Installation with PC and Git
 This installation process assumes that [Julia](https://julialang.org/downloads/) has been downloaded and can be accessed from the command line interface (CLI) or an IDE ([VS Code](https://code.visualstudio.com/docs/languages/julia), [Jupyter Notebooks](https://github.com/JuliaLang/IJulia.jl)). An IDE is not necessary, as everything can be run from the CLI.
 
 ### Downloading the data
