@@ -2,9 +2,10 @@
 # functions defined: hessinterior, obj, mycon
 
 module MarketEquilibrium
-export hessinterior, obj, mycon, obj2, Price_Solve, wage_update_ms, grad_f
+export hessinterior, obj, mycon, obj2, Price_Solve, wage_update_ms, grad_f, Price_Solve2
 
-import ..ParamsFunctions: StructParams
+import DrawGammas: StructParams
+
 
 
 function obj(Inputvec::Vector, power::Matrix, shifter::Matrix, KFshifter::Union{SubArray, Vector}, 
@@ -51,9 +52,8 @@ function Price_Solve(Inputvec::Vector{Float64}, shifter::Union{Matrix, Float64},
     return vec(prices)
 end
 
-
 function location_prices!(pijs::Vector{Matrix{Float64}}, PCs::Matrix{Float64}, Xjdashs::Matrix{Float64}, Yjdashs::Matrix{Float64},
-    w0::Vector{Float64}, p_E_D::Vector{Float64}, params::StructParams, Ej::Matrix{Float64}, 
+    w0::Vector{Float64}, p_E_D::Vector{Float64}, params, Ej::Matrix{Float64}, 
     p_F::Union{Float64, Vector, Int}, r::Matrix{Float64})
 
     for i = 1:params.I
@@ -72,25 +72,47 @@ function location_prices!(pijs::Vector{Matrix{Float64}}, PCs::Matrix{Float64}, X
     end
 end
 
-
-function update_wage_data!(tpijs::Matrix, params::StructParams, w0::Union{Matrix, Vector}, pES::Union{Vector, Matrix},
+function update_wage_data!(params::StructParams, w0::Union{Matrix, Vector}, pES::Union{Vector, Matrix},
     p_F::Union{Float64, Vector, Int}, r::Union{Vector, Matrix}, Ej, PCs::Matrix, Xjdashs::Matrix,
     Yjdashs::Matrix)
 
-    for i = 1:params.I
-        @views tpijs .= params.tau[i] .* 
-                        w0 .^ params.Vs[i, 1] .* 
-                        pES .^ (params.Vs[i, 2] + params.Vs[i, 3]) .* 
-                        (params.kappa + (params.kappa .* p_F ./ pES) .^ (1 - params.psi)) .^ 
-                        (-(params.psi / (params.psi - 1)) * params.Vs[i, 3]) .*
-                        r .^ params.Vs[i, 4] ./
-                        (params.Z .* params.zsector[:, i] .* params.cdc)
-                        # this element takes 2156 profiling counts 
-        PCs[:, i] = (sum(tpijs .^ (1 - params.sig), dims=1)) .^ (1 / (1 - params.sig))
+    sig = params.sig                    # common exponent
+    one_minus_sig = 1 - sig
+    inv_exponent = 1 / one_minus_sig     # for later use
 
-        factor = (params.betaS[:, i] .* Ej ./ PCs[:, i].^(1 - params.sig))'
-        Xjdashs[:, i] = sum(tpijs .^ (1 - params.sig) .* factor, dims=2)
-        Yjdashs[:, i] = sum(tpijs .^ (-params.sig) .* factor, dims=2)
+    Threads.@threads :static for i in 1:params.I
+        tpjs = Matrix{Float64}(undef, 2531, 2531)
+
+        # Precompute parameters for the i-th iteration.
+        τ       = params.tau[i]
+        exp1    = params.Vs[i, 1]
+        exp23   = params.Vs[i, 2] + params.Vs[i, 3]
+        exp34   = -(params.psi / (params.psi - 1)) * params.Vs[i, 3]
+        exp4    = params.Vs[i, 4]
+        κ       = params.kappa
+        ψ       = params.psi
+        Z       = params.Z
+        zsec    = @view params.zsector[:, i]
+        cdc     = params.cdc
+        beta    = @view params.betaS[:, i]
+        
+        # Compute tpijs with fused broadcast.
+        @. tpjs = τ * (w0 ^ exp1) * (pES ^ exp23) *
+                   ((κ + (κ * p_F / pES) ^ (1 - ψ)) ^ exp34) *
+                   (r ^ exp4) / (Z * zsec * cdc)
+        
+        # Compute temporary array: tpijs^(1 - sig) is used twice.
+        temp = tpjs .^ one_minus_sig
+        
+        # Calculate PCs along the columns (summing along rows).
+        PCs[:, i] = (sum(temp, dims=1)) .^ inv_exponent
+        
+        # Compute factor (note: ensure dimensions align with your intended broadcasting).
+        factor = (@. beta * Ej / (PCs[:, i] ^ one_minus_sig))'
+        
+        # Update Xjdashs and Yjdashs with fused operations.
+        Xjdashs[:, i] = sum(temp .* factor, dims=2)
+        Yjdashs[:, i] = sum((tpjs .^ (-sig)) .* factor, dims=2)
     end
 
 end
@@ -120,7 +142,6 @@ function wage_update_ms(w::Union{Vector, Matrix}, p_E_D::Union{Vector, Matrix},p
     w_adjustment_factor = Matrix{Float64}(undef, 2531, 1)
     W_Real = Vector{Float64}(undef, 2531)
     PC = Vector{Float64}(undef, 2531)
-    tpijs = Matrix{Float64}(undef, 2531, 2531)
     Xjdash = Matrix{Float64}(undef, 2531, 1)
 
     w0 = copy(w)
@@ -130,20 +151,38 @@ function wage_update_ms(w::Union{Vector, Matrix}, p_E_D::Union{Vector, Matrix},p
     Xj = @. w0 * params.L + pED * D_E + r * KP  
     Ej = @. w0 * params.L + pES * Y_E + r * KP + Pi + fossil
 
-    update_wage_data!(tpijs, params, w0, pED, p_F, r, Ej, PCs, Xjdashs, Yjdashs)
+    update_wage_data!(params, w0, pED, p_F, r, Ej, PCs, Xjdashs, Yjdashs)
     
-    # Efficiently calculate price indices and adjust wages
+    # calculate price indices and adjust wages
     price_adjustments!(PC, PCs, params, w0, Xjdashs, Xj, pES, pED, p_F, W_Real, w_adjustment_factor, Xjdash)
 
     return w0, W_Real, sum(Xj), PC, Xjdashs, PCs, Yjdashs, Xj
 
 end
 
-# archived functions no longer being used
+# ---------------------------- Archived Functions ---------------------------- #
 
 """
 
-function mycon(Inputvec::Vector, mat::Matrix, params)
+function update_wage_data()
+    for i = 1:params.I
+        @views tpijs .= params.tau[i] .* 
+                        w0 .^ params.Vs[i, 1] .* 
+                        pES .^ (params.Vs[i, 2] + params.Vs[i, 3]) .* 
+                        (params.kappa + (params.kappa .* p_F ./ pES) .^ (1 - params.psi)) .^ 
+                        (-(params.psi / (params.psi - 1)) * params.Vs[i, 3]) .*
+                        r .^ params.Vs[i, 4] ./
+                        (params.Z .* params.zsector[:, i] .* params.cdc)
+                        # this element takes 2156 profiling counts 
+        PCs[:, i] = (sum(tpijs .^ (1 - params.sig), dims=1)) .^ (1 / (1 - params.sig))
+
+        factor = (params.betaS[:, i] .* Ej ./ PCs[:, i].^(1 - params.sig))'
+        Xjdashs[:, i] = sum(tpijs .^ (1 - params.sig) .* factor, dims=2)
+        Yjdashs[:, i] = sum(tpijs .^ (-params.sig) .* factor, dims=2)
+    end
+end
+
+function mycon(Inputvec::Vector, mat::Matrix, params::StructParams)
     mid = length(Inputvec) ÷ 2
 
     Dvec = @view Inputvec[1:mid]

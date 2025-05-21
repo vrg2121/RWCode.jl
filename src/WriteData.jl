@@ -78,10 +78,11 @@ function writedata(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, 
     writedlm("$R/Renewable_share$(labeller).csv", sharepath, ",")
 
     # subsidy value
-    Sv .= 0.05 .* DL.RWParams.thetaS .* T.transeq.KR_path
-    Subval .= sum(Sv, dims=1)
-    Subsidyvalue = [yearindex_subsidy Subval[1:12]]
-    writedlm("$R/Subsidyvalue$(labeller).csv", Subsidyvalue, ",")
+    #Sv .= 0.05 .* DL.RWParams.thetaS .* T.transeq.KR_path
+    #Subval .= sum(Sv, dims=1)
+    #Subsidyvalue = [yearindex_subsidy Subval[1:12]]
+    #writedlm("$R/Subsidyvalue$(labeller).csv", Subsidyvalue, ",")
+    #redundant
 
     Subsidyvalue = 100 .* T.renewshareUS[1:30]
     Subsidyvalue = [yearindex_subsidy Subsidyvalue[1:12] T.YUS_rel[:, 1:12]']
