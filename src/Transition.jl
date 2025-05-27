@@ -9,35 +9,52 @@ import Random: Random
 import DataFrames: DataFrame
 import MAT: matwrite
 
+# import structs
+
+import DrawGammas: StructAllParams
+import ..DataLoads: StructAllData
+import ..Market: StructMarketOutput
+import ..SteadyState: StructSteadyState
 import ..ModelConfiguration: ModelConfig
 
-# import parameters, data and variables
+export solve_transition, StructTransOutput
 
-export solve_transition
+mutable struct StructTransOutput
+    transeq::StructTransEq
+    renewshare_path_region::Matrix{Float64}
+    renewshare_path_world::Matrix{Float64}
+    renewshareUS::Matrix{Float64}
+    welfare_wagechange_2040::Vector{Float64}
+    welfare_capitalchange_2040::Vector{Float64}
+    welfare_electricitychange_2040::Vector{Float64}
+    welfare_fossilchange_2040::Vector{Float64}
+    YUS_rel::Matrix{Float64}
+    st::Matrix{Float64}
+end
 
 """
-    solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig, G::String)
+    solve_transition(P::StructAllParams, DL::StructAllData, M::StructMarketOutput, S::StructSteadyState, Subsidy::Int, config::ModelConfig, G::String)
 
 Model of the renewable energy transition up to 2040.
 
 ## Inputs
-- `P::NamedTuple` -- NamedTuple of parameters. Output of `P = setup_parameters(D, G)`
-- `D::NamedTuple` -- NamedTuple of model data. Output of `DL = load_data(P, D)`
-- `M::NamedTuple` -- NamedTuple of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
-- `S::NamedTuple` -- NamedTuple of steady state equilibrium. Output of `S = solve_steadystate(P, DL, M, config, Guesses)`
+- `P::StructAllParams` -- Struct of parameters. Created in local package DrawGammas
+- `D::StructAllData` -- Struct of model data. Output of `DL = load_data(P, D)`
+- `M::StructMarketOutput` -- Struct of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
+- `S::StructSteadyState` -- Struct of steady state equilibrium. Output of `S = solve_steadystate(P, DL, M, config, Guesses)`
 - `Subsidy::Int` -- Whether or not to calculate transition with a renewable energy subsidy.
 - `config::ModelConfig` -- struct of user defined model configurations. `config = ModelConfig()`
 - `G::String` -- path to Guesses folder. `G = "path/to/Guesses"`
 
 ## Outputs
-Named tuple containing path of renewable energy transition across specific regions and the world; share of renewables in the US; wage changes,
+Struct containing path of renewable energy transition across specific regions and the world; share of renewables in the US; wage changes,
     capital changes, electricity changes and fossil fuel changes until 2040. Saves price of fuel when hours of battery 
     storage is 0 in Guesses.
 
 ## Notes
 Calculated with some variations when RunTransition==1, RunBatteries==1, RunExog==1, RunCurtailment==1. Not calculated when RunImprovement==1.
 """
-function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, Subsidy::Int, config::ModelConfig, G::String)
+function solve_transition(P::StructAllParams, DL::StructAllData, M::StructMarketOutput, S::StructSteadyState, Subsidy::Int, config::ModelConfig, G::String)
     # set st 
     st = zeros(P.params.J, P.T + 1)
     if Subsidy == 1
@@ -103,12 +120,12 @@ function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::Named
 
     # save the path for the price of capital
 
-    for kk in 1:P.params.N
+    @inbounds for kk in 1:P.params.N
         ind = P.majorregions.rowid2[kk]:P.majorregions.rowid[kk]
         @views renewshare_path_region[kk, :] = (1 .- sum(transeq.YF_path[ind, :], dims=1) ./ sum(transeq.Y_path[ind, :], dims=1))'
     end
         
-    for kk = 1:P.params.N
+    @inbounds for kk = 1:P.params.N
         ind = P.majorregions.rowid2[kk]:P.majorregions.rowid[kk]
         @views renewshare_path_region2[kk, :] = (1 .- sum(transeq.YR_path[ind, :], dims=1) ./ sum(transeq.Y_path[ind, :], dims=1))'  # uses power path
     end
@@ -119,26 +136,28 @@ function solve_transition(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::Named
     
     YUS = sum(transeq.Y_path[1:722, :], dims=1)
     YUS_rel = YUS ./ YUS[1]
-    
-    p_F_path_guess = transeq.p_F_path_guess
 
-    if config.hoursofstorage==0
-        matwrite("$G/p_F_path_guess_saved.mat", Dict("p_F_path_guess" => p_F_path_guess))
-    end
-
-    return (
-        transeq = transeq,
-        renewshare_path_region = renewshare_path_region,
-        renewshare_path_world = renewshare_path_world,
-        renewshareUS = renewshareUS,
-        welfare_wagechange_2040 = welfare_wagechange_2040,
-        welfare_capitalchange_2040 = welfare_capitalchange_2040,
-        welfare_electricitychange_2040 = welfare_electricitychange_2040,
-        welfare_fossilchange_2040 = welfare_fossilchange_2040,
-        YUS_rel = YUS_rel,
-        st = st
+    return StructTransOutput(
+        transeq,
+        renewshare_path_region,
+        renewshare_path_world,
+        renewshareUS,
+        welfare_wagechange_2040,
+        welfare_capitalchange_2040,
+        welfare_electricitychange_2040,
+        welfare_fossilchange_2040,
+        YUS_rel,
+        st
     )
 end
 
-end
+# ---------------------------------------------------------------------------- #
+#                                   Addendum                                   #
+# ---------------------------------------------------------------------------- #
+#p_F_path_guess = transeq.p_F_path_guess
 
+#if config.hoursofstorage==0
+#    matwrite("$G/p_F_path_guess_saved.mat", Dict("p_F_path_guess" => p_F_path_guess))
+#end
+
+end

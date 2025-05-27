@@ -22,14 +22,14 @@ import DataFrames: DataFrame
 
 mutable struct StructMarketOutput
     wageresults::Matrix{Float64}
-    p_KR_bar_init::Matrix{Float64}  # need to double check
-    KF_init::Matrix{Float64}
+    p_KR_bar_init::Matrix{Float64} 
+    KF_init::Vector{Float64}
     laboralloc_init::Matrix{Float64}
-    p_KR_init_S::Float64 # need to double check
-    p_KR_init_W::Float64 # need to double check
-    renewshareUS::Float64 # need to double check
+    p_KR_init_S::Float64 
+    p_KR_init_W::Float64 
+    renewshareUS::Float64 
     p_F_int::Float64
-    mrkteq::StructMarketEq  # Replace with specific type if known (likely a custom struct)
+    mrkteq::StructMarketEq 
     priceresults::Vector{Float64}
 end
 
@@ -52,6 +52,7 @@ function solve_market(P::StructAllParams, DL::StructAllData, config::ModelConfig
 # ---------------------------------------------------------------------------- #
 #                           Solve Market Equilibrium                           #
 # ---------------------------------------------------------------------------- #
+
     mrkteq = solve_initial_equilibrium(P.params, DL.wage_init, P.majorregions,
                                         DL.regionParams, DL.KR_init_S, DL.KR_init_W, DL.R_LR, DL.sectoralempshares,
                                         P.Linecounts, P.kappa, P.regions, P.linconscount, P.updw_w, P.upw_z, DL.RWParams, G);
@@ -80,7 +81,6 @@ function solve_market(P::StructAllParams, DL::StructAllData, config::ModelConfig
     laboralloc_init .= copy(mrkteq.laboralloc)
     PCresults .= copy(mrkteq.p_E_init)
 
-
     #get renewable shares
     renewshareUS = 1 - (sum(mrkteq.YF_init[1:P.majorregions.n[1],:]) ./ sum(mrkteq.YE_init[1:P.majorregions.n[1]]));
 
@@ -99,6 +99,37 @@ function solve_market(P::StructAllParams, DL::StructAllData, config::ModelConfig
         mrkteq,
         priceresults
 )
+
+end
+
+function solve_market_batteries(P::StructAllParams, DL::StructAllData, )
+    mrkteq = solve_initial_equilibrium(P.params, DL.wage_init, P.majorregions,
+                                        DL.regionParams, DL.KR_init_S, DL.KR_init_W, DL.R_LR, DL.sectoralempshares,
+                                        P.Linecounts, P.kappa, P.regions, P.linconscount, P.updw_w, P.upw_z, DL.RWParams, G);
+
+    println("Initial Calibration= ", mrkteq.diffend)
+
+    wageresults = Matrix{Float64}(undef, 2531, 2)
+    priceresults = Vector{Float64}(undef, 2531)
+    PCresults = Vector{Float64}(undef, 2531)
+    laboralloc_init = Matrix{Float64}(undef, 2531, 10)
+    KF_init = Vector{Float64}(undef, 2531)
+
+    SShare_init = Matrix{Float64}(undef, 2531, 1)
+    p_KR_bar_init = Matrix{Float64}(undef, 2531, 1)
+
+    # set Q initial to be the solar already installed
+    Qtotal_init_S = sum(DL.KR_init_S)
+    Qtotal_init_W = sum(DL.KR_init_W)
+    p_KR_init_S = (config.Initialprod + Qtotal_init_S) ^ (-P.params.gammaS)   
+    p_KR_init_W = (config.Initialprod + Qtotal_init_W) ^ (-P.params.gammaW)
+
+    up_SShare_pKRbar_init!(SShare_init, p_KR_bar_init, DL.regionParams.thetaS, p_KR_init_S, P.params.varrho, DL.regionParams.thetaW, p_KR_init_W) #   73.200 μs (1 allocation: 16 bytes)
+
+    wageresults .= copy(mrkteq.W_Real)
+    priceresults .= copy(mrkteq.p_E_init)
+    laboralloc_init .= copy(mrkteq.laboralloc)
+    PCresults .= copy(mrkteq.p_E_init)
 
 end
 
@@ -128,7 +159,6 @@ end
 #p_E_init = mrkteq.p_E_init
 #laboralloc = mrkteq.laboralloc
 
-# this will conflict with other GRID run data
 """matwrite("G/w_guess_mat.mat", Dict("w_guess" => w_guess))
 matwrite("G/p_E_guessmat.mat", Dict("p_E_init" => p_E_init))
 matwrite("G/Dout_guess_init.mat", Dict("result_Dout_init" => result_Dout_init))

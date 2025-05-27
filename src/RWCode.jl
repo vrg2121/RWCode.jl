@@ -118,6 +118,9 @@ import .WriteData: writedata
 include("./WriteDataBattery.jl")
 import .WriteDataBattery: writedata_battery
 
+include("./SteadyStateBat.jl")
+import .SteadyStateBat: solve_steadystate_bat, StructSteadyStateBat
+
 # -------------------- Run Exogenous Technology Equilibria ------------------- #
 
 # Long Run Equilibrium with Exogenous Tech
