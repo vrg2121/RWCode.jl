@@ -10,7 +10,8 @@ using ..MarketFunctions
 using ..MarketEquilibrium
 using ..RegionModel
 import ..ModelConfiguration: ModelConfig
-import DrawGammas: StructAllParams, StructParams
+import ..Params: StructAllParams
+import ..ParamsFunctions: StructParams
 import ..DataLoads: StructAllData
 
 # load packages

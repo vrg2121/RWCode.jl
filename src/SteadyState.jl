@@ -8,7 +8,7 @@ import Interpolations: interpolate, Gridded, Linear
 
 # import parameters, data and variables
 import ..ModelConfiguration: ModelConfig
-import DrawGammas: StructAllParams
+import ..Params: StructAllParams
 import ..DataLoads: StructAllData
 import ..Market: StructMarketOutput
 

@@ -7,7 +7,7 @@ using ..RegionModel, ..MarketEquilibrium
 using JuMP, Ipopt
 
 import ..DataLoadsFunc: StructRWParams
-import DrawGammas: StructParams
+import ..ParamsFunctions: StructParams
 
 # ---------------------------------------------------------------------------- #
 #                                  Set Up Data                                 #

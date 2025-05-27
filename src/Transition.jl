@@ -11,7 +11,7 @@ import MAT: matwrite
 
 # import structs
 
-import DrawGammas: StructAllParams
+import ..Params: StructAllParams
 import ..DataLoads: StructAllData
 import ..Market: StructMarketOutput
 import ..SteadyState: StructSteadyState
@@ -38,7 +38,7 @@ end
 Model of the renewable energy transition up to 2040.
 
 ## Inputs
-- `P::StructAllParams` -- Struct of parameters. Created in local package DrawGammas
+- `P::StructAllParams` -- Struct of parameters. Created in Params.jl
 - `D::StructAllData` -- Struct of model data. Output of `DL = load_data(P, D)`
 - `M::StructMarketOutput` -- Struct of market equilibrium. Output of `M = solve_market(P, DL, config, G)`
 - `S::StructSteadyState` -- Struct of steady state equilibrium. Output of `S = solve_steadystate(P, DL, M, config, Guesses)`

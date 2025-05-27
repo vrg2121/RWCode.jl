@@ -9,7 +9,8 @@ import ..RegionModel: solve_model
 
 # import relevant structs
 import ..DataLoadsFunc: StructGsupply, StructRWParams
-import DrawGammas: StructParams, StructAllParams
+import ..ParamsFunctions: StructParams
+import ..Params: StructAllParams
 import ..MarketFunctions: StructMarketEq
 import ..SteadyStateFunctions: StructPowerOutput
 

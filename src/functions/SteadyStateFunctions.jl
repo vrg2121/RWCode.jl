@@ -8,7 +8,7 @@ import ..MarketFunctions: StructMarketEq
 using JuMP, Ipopt
 using ..RegionModel, ..MarketEquilibrium
 
-import DrawGammas: StructParams
+import ..ParamsFunctions: StructParams
 import ..ModelConfiguration: ModelConfig
 
 export solve_power_output, StructPowerOutput, fill_wr!, up_e2_LR!

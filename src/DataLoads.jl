@@ -1,7 +1,6 @@
 module DataLoads
 
-# export data
-export load_data
+export load_data, StructAllData
 
 # load functions
 using ..DataLoadsFunc, ..DataAdjustments
@@ -9,9 +8,29 @@ using ..DataLoadsFunc, ..DataAdjustments
 # load functions from packages
 import CSV: CSV
 import DataFrames: DataFrame
+import ..Params: StructAllParams
+
+mutable struct StructAllData
+    RWParams::StructRWParams
+    regionParams::StructRWParams
+    FFsupplyCurves::StructFFsupplyCurves 
+    GsupplyCurves::StructGsupply
+    projectionswind::Matrix{Float64}
+    projectionssolar::Matrix{Float64}
+    curtmat::Array{Float64,3}
+    batteryrequirements::Matrix{Float64}
+    sectoralempshares::Matrix{Union{Float64, Missing}}
+    samplepointssolar::Array{Float64, 3}
+    samplepointswind::Array{Float64, 3}
+    samplepointsbat::Array{Float64, 3}
+    R_LR::Float64
+    wage_init::Vector{Float64}
+    KR_init_S::Matrix{Float64}
+    KR_init_W::Matrix{Float64}
+end
 
 
-function load_data(P::NamedTuple, D::String)
+function load_data(P::StructAllParams, D::String)
     # initialize data
     wage_init = Vector{Float64}(undef, 2531)
     secshares = Matrix{Float64}(undef, 10, 2)
@@ -27,10 +46,16 @@ function load_data(P::NamedTuple, D::String)
 
     # load global csv data
 
-    regions_all, Linedata, majorregions_all, Fossilcapital, Renewablecapital, Electricityregionprices = load_csv_data(D)
+    #regions_all, Linedata, majorregions_all, Fossilcapital, Renewablecapital, Electricityregionprices = load_csv_data(D)
+    # variables not used later: regions_all, Fossilcapital, Renewablecapital, Electricityregionprices
+
+    Linedata = CSV.File("$D/ModelDataset/Linedata.csv") |> DataFrame
+    majorregions_all = CSV.File("$D/ModelDataset/majorregions.csv") |> DataFrame
+
+
 
     # initiate wage
-    wage_init = w_i!(wage_init, P.regions)
+    w_i!(wage_init, P.regions)
 
     # long run interest rate
     R_LR = 1/P.params.beta
@@ -40,12 +65,10 @@ function load_data(P::NamedTuple, D::String)
 
     # create RWParams
     RWParams = fill_RWParams(majorregions_all, P.majorregions, P.regions, Linedata, P.params, wage_init, P.thetaS, P.thetaW, P.popelas, rP_LR, D);
-    ## right now RWParams is stored in the heap and accessed by a chain of addresses. 
-    ## Alternative method to store in stack using immutable struct is in rwparams_notes.jl 
 
     # load in sectoral shares
 
-    secshares, sectoralempshares = sec_shares!(secshares, sectoralempshares, D)
+    sec_shares!(secshares, sectoralempshares, D)
 
     # ---------------------------------------------------------------------------- #
     #                             Load Fossil Fuel Data                            #
@@ -90,25 +113,26 @@ function load_data(P::NamedTuple, D::String)
     curtmat, samplepointssolar, samplepointswind, samplepointsbat = create_curtmat!(curtmatmx, curtmatmx, curtmatmx, curtmat, D);
 
     # import battery requirements
-    batteryrequirements = battery_req!(batteryrequirements, D)
+    battery_req!(batteryrequirements, D)
 
-    return(
-        RWParams = RWParams,
-        regionParams = regionParams,
-        FFsupplyCurves = FFsupplyCurves,
-        GsupplyCurves = GsupplyCurves,
-        projectionswind = projectionswind,
-        projectionssolar = projectionssolar,
-        curtmat = curtmat,
-        batteryrequirements = batteryrequirements,
-        sectoralempshares = sectoralempshares,
-        samplepointssolar = samplepointssolar,
-        samplepointswind = samplepointswind,
-        samplepointsbat = samplepointsbat,
-        R_LR = R_LR, 
-        wage_init = wage_init, 
-        KR_init_S = KR_init_S, 
-        KR_init_W = KR_init_W
-        )
+    return StructAllData(
+        RWParams,
+        regionParams,
+        FFsupplyCurves,
+        GsupplyCurves,
+        projectionswind,
+        projectionssolar,
+        curtmat,
+        batteryrequirements,
+        sectoralempshares,
+        samplepointssolar,
+        samplepointswind,
+        samplepointsbat,
+        R_LR,
+        wage_init,
+        KR_init_S,
+        KR_init_W
+    )
 end
+
 end

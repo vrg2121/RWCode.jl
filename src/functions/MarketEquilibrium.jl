@@ -4,8 +4,7 @@
 module MarketEquilibrium
 export hessinterior, obj, mycon, obj2, Price_Solve, wage_update_ms, grad_f, Price_Solve2
 
-import DrawGammas: StructParams
-
+import ..ParamsFunctions: StructParams
 
 
 function obj(Inputvec::Vector, power::Matrix, shifter::Matrix, KFshifter::Union{SubArray, Vector}, 
