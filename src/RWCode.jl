@@ -194,7 +194,6 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
 
         println("Writing outputs of transitional dynamics without Subsidy...")
         writedata(P, DL, M, S, T, Subsidy, config, R)
-        #writedata(P, DL, M, S, T, Subsidy, config, path)
 
         # ------------------------ Run Transition with Subsidy ----------------------- #
         println("Solving transitional dynamics with Subsidy...")
@@ -203,7 +202,6 @@ function run_rwcode(config::ModelConfig, D::String, G::String, R::String)
 
         println("Writing outputs of transitional dynamics with Subsidy...")
         writedata(P, DL, M, S, TS, Subsidy, config, R)
-        #writedata(P, DL, M, S, TS, Subsidy, config, path)
 
     end
 

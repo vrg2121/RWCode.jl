@@ -3,6 +3,11 @@ module WriteDataBattery
 # import package 
 import DelimitedFiles: writedlm
 import ..ModelConfiguration: ModelConfig
+import ..Params: StructAllParams
+import ..DataLoads: StructAllData
+import ..Market: StructMarketOutput
+import ..SteadyState: StructSteadyState
+import ..Transition: StructTransOutput
 
 # import data from model
 export writedata_battery
@@ -28,7 +33,7 @@ Model results for capital and battery price falls, renewable shares, US GDP outc
 ## Notes
 This function writes data when RunBattery==1 or RunCurtailment==1.
 """
-function writedata_battery(P::NamedTuple, M::NamedTuple, S::NamedTuple, T::NamedTuple, config::ModelConfig, R::String)
+function writedata_battery(P::StructAllParams, M::StructMarketOutput, S::StructSteadyState, T::StructTransOutput, config::ModelConfig, R::String)
 
     curtailmentswitch = P.curtailmentswitch
     hoursofstorage = config.hoursofstorage

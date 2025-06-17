@@ -217,12 +217,12 @@ function optimize_region!(result_price_init::Vector, result_Dout_init::Matrix{An
 		# the local call in this section localizes the memory to each thread to reduce crossing data 
 		# set up optimization problem for region kk
 
-		local l_guess, LB, UB, guess, power, shifter, KFshifter, KRshifter, n, mid = data_set_up(kk, majorregions, Linecounts, RWParams, laboralloc,
+		local l_guess, LB, UB, guess, power, shifter, KFshifter, KRshifter, n, mid, Gammatrix, linecons = data_set_up(kk, majorregions, Linecounts, RWParams, laboralloc,
 											Lsector, params, wage_init, rP_init, pg_init_s, pE_market_init, kappa, regionParams, 
 											regionParams.KF, p_F, linconscount, KR_init_S, KR_init_W, "market")
 
 		# solve the model for region kk (see RegionModel.jl)
-        local P_out = solve_model(kk, l_guess, LB, UB, guess, regionParams, params, power, shifter, KFshifter, KRshifter, p_F, mid)
+        local P_out = solve_model(kk, l_guess, LB, UB, guess, regionParams, params, power, shifter, KFshifter, KRshifter, p_F, mid, Gammatrix, linecons)
 
 		result_price_init[kk] .= Price_Solve(P_out, shifter, n, params) #.MarketEquilibrium.jl
 		@views result_Dout_init[kk] .= P_out[1:mid]
@@ -366,7 +366,7 @@ end
 
 mutable struct StructMarketEq
     Lsector::Matrix{Float64}
-    result_price_init::Vector{Any}  # Likely Vector{Vector{Float64}} or Vector{Matrix{Float64}} depending on your data structure
+    result_price_init::Vector{Any}
     pg_init_s::Matrix{Float64}
     pE_market_init::Vector{Float64}
     Lossfac_init::Matrix{Float64}
@@ -440,7 +440,7 @@ function solve_initial_equilibrium(params::StructParams, wage_init::Vector{Float
 
         optimize_region!(result_price_init, result_Dout_init, result_Yout_init, Lossfac_init, majorregions, Linecounts, RWParams, laboralloc,
                             Lsector, params, wage_init, rP_init, linconscount, pg_init_s, pE_market_init, kappa, p_F, regionParams, KR_init_S,
-                            KR_init_W); #   17.706 s (3528432 allocations: 1.07 GiB)
+                            KR_init_W); #   28.000 s (3733224 allocations: 1.70 GiB)
 
         # solve market equilibrium
 

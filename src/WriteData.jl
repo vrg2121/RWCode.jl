@@ -3,6 +3,11 @@ module WriteData
 # import package 
 import DelimitedFiles: writedlm
 import ..ModelConfiguration: ModelConfig
+import ..Params: StructAllParams
+import ..DataLoads: StructAllData
+import ..Market: StructMarketOutput
+import ..SteadyState: StructSteadyState
+import ..Transition: StructTransOutput
 
 export writedata
 
@@ -27,7 +32,7 @@ Model results (with and without subsidy) for capital and battery price falls, re
 ## Notes
 This function writes data only when RunTransition==1.
 """
-function writedata(P::NamedTuple, DL::NamedTuple, M::NamedTuple, S::NamedTuple, T::NamedTuple, Subsidy::Int, config::ModelConfig, R::String)
+function writedata(P::StructAllParams, DL::StructAllData, M::StructMarketOutput, S::StructSteadyState, T::StructTransOutput, Subsidy::Int, config::ModelConfig, R::String)
     # initialize data
     yearindex_cap = Vector{Int64}(undef, 20)
     yearindex_share = Vector{Int64}(undef, 30)
